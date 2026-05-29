@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(New-Item -ItemType Directory -Path \"C:\\\\Users\\\\Paulo Renand\\\\Downloads\\\\hrs site\\\\images\" -Force)",
+      "mcp__Claude_Preview__preview_start",
+      "PowerShell(\\(Get-Command python -ErrorAction SilentlyContinue\\).Source; \\(Get-Command python3 -ErrorAction SilentlyContinue\\).Source; \\(Get-Command node -ErrorAction SilentlyContinue\\).Source)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp"
+    ]
+  }
+}

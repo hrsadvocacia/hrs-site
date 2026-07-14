@@ -1,0 +1,105 @@
+{
+  "_leia_me": "ÚNICA fonte de verdade dos números legais do simulador. Campos `null` e fontes começando por 'PREENCHER' são PENDENTES: devem ser preenchidos e conferidos por advogado do escritório contra a legislação vigente (incl. EC 136/2025 e lei estadual de Goiás de nov/2025) ANTES do deploy. O script scripts/validar-parametros.mjs falha se qualquer pendência permanecer. NÃO inventar valores.",
+  "versao": "1.0.0-pendente",
+  "salarioMinimo": {
+    "valor": null,
+    "vigenciaDesde": "",
+    "fonte": "PREENCHER — valor do salário mínimo nacional vigente e norma que o fixa"
+  },
+  "entes": [
+    {
+      "id": "uniao-federal",
+      "nome": "União / Autarquias e Fundações Federais",
+      "tetoRPV": {
+        "modo": "salarios_minimos",
+        "quantidade": 60,
+        "fonte": "art. 17, §1º, Lei 10.259/2001"
+      },
+      "regimeEspecial": false,
+      "prazoRPVMeses": {
+        "min": null,
+        "max": null,
+        "fonte": "PREENCHER — janela estimada de pagamento da RPV federal após expedição (prática do TRF competente)"
+      }
+    },
+    {
+      "id": "estado-goias",
+      "nome": "Estado de Goiás",
+      "tetoRPV": {
+        "modo": "salarios_minimos",
+        "quantidade": null,
+        "fonte": "PREENCHER — lei estadual de Goiás (pós-nov/2025) que fixa o teto de RPV estadual"
+      },
+      "regimeEspecial": null,
+      "prazoRPVMeses": {
+        "min": null,
+        "max": null,
+        "fonte": "PREENCHER — janela estimada de pagamento da RPV estadual após expedição"
+      }
+    },
+    {
+      "id": "municipio-goiania",
+      "nome": "Município de Goiânia",
+      "tetoRPV": {
+        "modo": "salarios_minimos",
+        "quantidade": null,
+        "fonte": "PREENCHER — lei municipal de Goiânia que fixa o teto de RPV municipal"
+      },
+      "regimeEspecial": null,
+      "prazoRPVMeses": {
+        "min": null,
+        "max": null,
+        "fonte": "PREENCHER — janela estimada de pagamento da RPV municipal após expedição"
+      }
+    },
+    {
+      "id": "estado-piaui",
+      "nome": "Estado do Piauí",
+      "tetoRPV": {
+        "modo": "salarios_minimos",
+        "quantidade": null,
+        "fonte": "PREENCHER — lei estadual do Piauí que fixa o teto de RPV estadual"
+      },
+      "regimeEspecial": null,
+      "prazoRPVMeses": {
+        "min": null,
+        "max": null,
+        "fonte": "PREENCHER — janela estimada de pagamento da RPV estadual após expedição"
+      }
+    },
+    {
+      "id": "outro",
+      "nome": "Outro ente devedor",
+      "tetoRPV": {
+        "modo": "salarios_minimos",
+        "quantidade": null,
+        "fonte": "PREENCHER — teto de RPV do ente conforme sua lei própria; à falta de lei, aplica-se o parâmetro do art. 87 do ADCT"
+      },
+      "regimeEspecial": null,
+      "prazoRPVMeses": {
+        "min": null,
+        "max": null,
+        "fonte": "PREENCHER — janela estimada de pagamento da RPV após expedição"
+      }
+    }
+  ],
+  "cortePrecatorio": {
+    "dataLimiteApresentacao": "02-04",
+    "obs": "Apresentado até 2 de abril → orçamento do ano seguinte. Após 2 de abril → orçamento do ano subsequente (art. 100, §5º, CF). Formato DD-MM. CONFERIR se a EC 136/2025 alterou a data-corte antes do deploy."
+  },
+  "atualizacao": {
+    "indice": "",
+    "juros": "",
+    "fonte": "PREENCHER — índice de correção e juros aplicáveis (v1 NÃO aplica correção; ver premissa no motor)"
+  },
+  "tributacao": {
+    "irrfRRA": {
+      "aplicavel": true,
+      "obs": "Rendimentos Recebidos Acumuladamente — tabela específica. v1 NÃO calcula valor exato (fora de escopo); exibe alerta."
+    },
+    "contribuicaoPrevidenciaria": {
+      "aplicavel": true,
+      "obs": "conforme natureza da verba. v1 NÃO calcula valor exato; exibe alerta."
+    }
+  }
+}

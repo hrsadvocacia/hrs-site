@@ -1,0 +1,180 @@
+/* ===== Simulador de Precatório/RPV — estilos específicos =====
+   Complementa style.css (mesmos tokens: --navy, --gold, --bg-alt, etc.). */
+
+.sim-hero {
+  background: var(--navy);
+  color: var(--white);
+  padding: 54px 48px 48px;
+}
+.sim-hero-inner { max-width: 900px; margin: 0 auto; text-align: center; }
+.sim-hero .eyebrow {
+  font-family: 'Raleway', sans-serif; font-size: 10px; font-weight: 600;
+  color: var(--gold); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 14px;
+}
+.sim-hero h1 { color: var(--white); font-size: clamp(26px, 4vw, 40px); line-height: 1.2; }
+.sim-hero .gold { color: var(--gold); }
+.sim-hero p { font-family: 'Raleway', sans-serif; color: var(--text-light); margin-top: 14px; font-size: 15px; line-height: 1.6; }
+
+.sim-shell { max-width: 760px; margin: 0 auto; padding: 40px 24px 24px; }
+
+/* Barra de progresso */
+.sim-progress { display: flex; gap: 8px; margin-bottom: 28px; list-style: none; padding: 0; }
+.sim-progress li {
+  flex: 1; height: 4px; background: var(--border-light); border-radius: 2px;
+  font-size: 0; transition: background 0.3s;
+}
+.sim-progress li.done, .sim-progress li.current { background: var(--gold); }
+.sim-progress-label {
+  text-align: center; font-family: 'Raleway', sans-serif; font-size: 11px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--navy);
+  margin-bottom: 22px;
+}
+
+/* Passo / card */
+.sim-step { background: var(--white); border: 0.5px solid var(--border-light); border-radius: 6px; padding: 30px; }
+.sim-step[hidden] { display: none; }
+.sim-step h2 { font-size: 21px; color: var(--navy); margin-bottom: 6px; }
+.sim-step .sim-help { font-family: 'Raleway', sans-serif; font-size: 13px; color: #7d90ad; margin-bottom: 22px; line-height: 1.5; }
+
+.sim-field { margin-bottom: 20px; }
+.sim-field > label, .sim-legend {
+  display: block; font-family: 'Raleway', sans-serif; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px; color: var(--navy); margin-bottom: 8px;
+}
+fieldset { border: none; padding: 0; margin: 0; }
+.sim-field input[type="text"], .sim-field input[type="number"],
+.sim-field input[type="date"], .sim-field input[type="email"],
+.sim-field input[type="tel"], .sim-field select {
+  width: 100%; font-family: 'Raleway', sans-serif; font-size: 15px; color: var(--text);
+  background: var(--bg-alt); border: 1px solid var(--border-light); border-radius: 3px;
+  padding: 12px 13px; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.sim-field input:focus, .sim-field select:focus {
+  outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.14);
+}
+
+/* Opções em cartão (radio) */
+.sim-options { display: grid; gap: 10px; }
+.sim-option {
+  display: flex; align-items: flex-start; gap: 12px; cursor: pointer;
+  background: var(--bg-alt); border: 1px solid var(--border-light); border-radius: 4px; padding: 14px 16px;
+  font-family: 'Raleway', sans-serif; transition: border-color 0.2s, background 0.2s;
+}
+.sim-option:hover { border-color: var(--gold-light); }
+.sim-option input { margin-top: 3px; accent-color: var(--gold); width: 17px; height: 17px; flex-shrink: 0; }
+.sim-option:has(input:checked) { border-color: var(--gold); background: rgba(201,168,76,0.07); }
+.sim-option-title { font-size: 15px; font-weight: 600; color: var(--navy); }
+.sim-option-desc { font-size: 12.5px; color: #7d90ad; margin-top: 2px; line-height: 1.45; }
+
+.sim-inline-error { color: #b02a2a; font-family: 'Raleway', sans-serif; font-size: 12.5px; margin-top: 6px; }
+
+/* Navegação do wizard */
+.sim-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 26px; }
+.sim-btn {
+  font-family: 'Raleway', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; padding: 13px 26px; border-radius: 3px; cursor: pointer; border: none; transition: opacity 0.2s, background 0.2s;
+}
+.sim-btn-next { background: var(--gold); color: var(--navy); }
+.sim-btn-next:hover { opacity: 0.88; }
+.sim-btn-back { background: transparent; color: var(--navy); border: 1px solid var(--border-light); }
+.sim-btn-back:hover { border-color: var(--navy); }
+.sim-btn[hidden] { display: none; }
+
+/* ===== Resultado ===== */
+.sim-result[hidden] { display: none; }
+.res-verdict {
+  border-radius: 6px; padding: 28px 30px; color: var(--white); text-align: center; margin-bottom: 18px;
+}
+.res-verdict.is-rpv { background: linear-gradient(135deg, #1f7a4d, #14603b); }
+.res-verdict.is-precatorio { background: linear-gradient(135deg, var(--navy), var(--navy-dark)); }
+.res-verdict .res-tag {
+  font-family: 'Raleway', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; opacity: 0.85;
+}
+.res-verdict .res-class { font-family: 'Cinzel', serif; font-size: clamp(30px, 6vw, 44px); margin: 6px 0 4px; }
+.res-verdict .res-valor { font-family: 'Raleway', sans-serif; font-size: 15px; opacity: 0.95; }
+
+.res-card {
+  background: var(--white); border: 0.5px solid var(--border-light); border-radius: 6px; padding: 22px 24px; margin-bottom: 16px;
+}
+.res-card h3 {
+  font-family: 'Raleway', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--gold); margin-bottom: 12px;
+}
+.res-card p, .res-card li { font-family: 'Raleway', sans-serif; font-size: 14px; color: var(--text); line-height: 1.6; }
+.res-prazo-faixa { font-family: 'Cinzel', serif; font-size: 22px; color: var(--navy); margin-bottom: 8px; }
+
+/* Trade-off da renúncia — o card mais destacado */
+.res-renuncia { border: 1.5px solid var(--gold); border-left: 5px solid var(--gold); background: rgba(201,168,76,0.06); }
+.res-renuncia h3 { color: #8a6d1f; }
+.res-renuncia .res-tradeoff-nums { display: flex; flex-wrap: wrap; gap: 22px; margin: 6px 0 12px; }
+.res-tradeoff-num .n { font-family: 'Cinzel', serif; font-size: 24px; color: var(--navy); display: block; }
+.res-tradeoff-num .l { font-family: 'Raleway', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #7d90ad; }
+
+/* Descontos */
+.res-linha { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border-light); font-family: 'Raleway', sans-serif; font-size: 14px; }
+.res-linha:last-child { border-bottom: none; }
+.res-linha .val { font-weight: 600; color: var(--navy); }
+.res-liquido { display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px; padding-top: 12px; border-top: 2px solid var(--navy); }
+.res-liquido .lbl { font-family: 'Raleway', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--navy); }
+.res-liquido .val { font-family: 'Cinzel', serif; font-size: 26px; color: #1f7a4d; }
+
+/* Alertas */
+.res-alertas { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.res-alertas li { position: relative; padding-left: 24px; }
+.res-alertas li::before { content: "\26A0"; position: absolute; left: 0; color: var(--gold); }
+
+/* Premissas (expansível, obrigatória) */
+.res-premissas summary {
+  cursor: pointer; font-family: 'Raleway', sans-serif; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px; color: var(--navy); padding: 4px 0;
+}
+.res-premissas ol { margin: 12px 0 0 18px; }
+.res-premissas li { margin-bottom: 8px; }
+
+/* Disclaimer — não colapsável, em toda tela de resultado */
+.sim-disclaimer {
+  background: #fbf7ec; border: 1px solid var(--gold-light); border-radius: 6px; padding: 18px 20px; margin: 18px 0;
+  font-family: 'Raleway', sans-serif; font-size: 12.5px; color: #6b5a33; line-height: 1.6;
+}
+.sim-disclaimer strong { color: #5a4a28; }
+
+/* Estado "em configuração" (parâmetros pendentes) */
+.sim-config { background: var(--white); border: 0.5px solid var(--border-light); border-left: 4px solid var(--gold); border-radius: 6px; padding: 24px; }
+.sim-config h2 { font-size: 20px; color: var(--navy); margin-bottom: 10px; }
+.sim-config p { font-family: 'Raleway', sans-serif; font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 14px; }
+
+/* ===== Captura de lead ===== */
+.lead-block { background: var(--white); border: 0.5px solid var(--border-light); border-radius: 6px; padding: 28px 26px; margin-top: 6px; }
+.lead-block h2 { font-size: 20px; color: var(--navy); margin-bottom: 6px; }
+.lead-block .lead-sub { font-family: 'Raleway', sans-serif; font-size: 13.5px; color: #7d90ad; margin-bottom: 20px; line-height: 1.55; }
+.lead-consent { display: flex; align-items: flex-start; gap: 10px; margin: 6px 0 18px; }
+.lead-consent input { margin-top: 3px; width: 17px; height: 17px; accent-color: var(--gold); flex-shrink: 0; }
+.lead-consent label { font-family: 'Raleway', sans-serif; font-size: 12.5px; color: var(--text); line-height: 1.5; }
+.lead-consent a { color: var(--gold); text-decoration: underline; }
+.lead-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.btn-whatsapp {
+  width: 100%; background: #25D366; color: var(--white); font-family: 'Raleway', sans-serif; font-size: 13px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border: none; border-radius: 3px; padding: 15px;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 9px; transition: opacity 0.2s;
+}
+.btn-whatsapp:hover { opacity: 0.9; }
+.btn-whatsapp[hidden] { display: none; }
+.lead-status { font-family: 'Raleway', sans-serif; font-size: 12.5px; text-align: center; margin-top: 12px; color: #7d90ad; }
+.lead-status.err { color: #b02a2a; }
+.lead-status.ok { color: #1f7a4d; }
+
+/* Conteúdo SEO + FAQ */
+.sim-conteudo { background: var(--bg-alt); }
+.sim-conteudo .section-inner { max-width: 820px; }
+.sim-conteudo h2 { font-size: 24px; color: var(--navy); margin: 28px 0 12px; }
+.sim-conteudo h3 { font-size: 18px; color: var(--navy); margin: 22px 0 8px; }
+.sim-conteudo p { font-family: 'Raleway', sans-serif; font-size: 15px; color: var(--text); line-height: 1.7; margin-bottom: 12px; }
+.sim-faq details { border-bottom: 1px solid var(--border-light); padding: 14px 0; }
+.sim-faq summary { cursor: pointer; font-family: 'Cinzel', serif; font-size: 16px; color: var(--navy); }
+.sim-faq p { margin-top: 10px; }
+
+@media (max-width: 640px) {
+  .sim-hero, .sim-conteudo .section-inner { padding-left: 20px; padding-right: 20px; }
+  .sim-step { padding: 22px; }
+  .sim-shell { padding: 28px 16px 16px; }
+}

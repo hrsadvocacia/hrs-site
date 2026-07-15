@@ -325,13 +325,15 @@ function ligarLead(entrada, r) {
       try {
         await fetch(LEAD_ENDPOINT, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          mode: 'no-cors', // Web App do Apps Script: evita preflight de CORS
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // requisição "simples"
           body: JSON.stringify({
             timestamp: new Date().toISOString(),
             nome, whatsapp: whats, email,
             ente: entrada.ente, natureza: entrada.naturezaCredito,
             valorBruto: entrada.valorBruto, classificacao: r.classificacao,
             consentimentoLGPD: consent, origem: origemUTM(),
+            website: honeypot, // repassa o honeypot para a 2ª barreira no servidor
           }),
         });
       } catch { /* falha de rede não bloqueia o contato pelo usuário */ }

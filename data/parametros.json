@@ -2,9 +2,9 @@
   "_leia_me": "ÚNICA fonte de verdade dos números legais do simulador. Campos `null` e fontes começando por 'PREENCHER' são PENDENTES: devem ser preenchidos e conferidos por advogado do escritório contra a legislação vigente (incl. EC 136/2025 e lei estadual de Goiás de nov/2025) ANTES do deploy. O script scripts/validar-parametros.mjs falha se qualquer pendência permanecer. NÃO inventar valores.",
   "versao": "1.0.0-pendente",
   "salarioMinimo": {
-    "valor": null,
+    "valor": 1621,
     "vigenciaDesde": "",
-    "fonte": "PREENCHER — valor do salário mínimo nacional vigente e norma que o fixa"
+    "fonte": "PREENCHER — norma que fixa o salário mínimo de R$ 1.621,00 (valor informado pelo escritório)"
   },
   "entes": [
     {
@@ -27,8 +27,8 @@
       "nome": "Estado de Goiás",
       "tetoRPV": {
         "modo": "salarios_minimos",
-        "quantidade": null,
-        "fonte": "PREENCHER — lei estadual de Goiás (pós-nov/2025) que fixa o teto de RPV estadual"
+        "quantidade": 10,
+        "fonte": "PREENCHER — lei estadual de Goiás (pós-nov/2025) que fixa o teto de RPV estadual (valor informado pelo escritório: 10 salários mínimos)"
       },
       "regimeEspecial": null,
       "prazoRPVMeses": {
@@ -42,8 +42,8 @@
       "nome": "Município de Goiânia",
       "tetoRPV": {
         "modo": "salarios_minimos",
-        "quantidade": null,
-        "fonte": "PREENCHER — lei municipal de Goiânia que fixa o teto de RPV municipal"
+        "quantidade": 30,
+        "fonte": "PREENCHER — lei municipal de Goiânia que fixa o teto de RPV municipal (valor informado pelo escritório: 30 salários mínimos)"
       },
       "regimeEspecial": null,
       "prazoRPVMeses": {

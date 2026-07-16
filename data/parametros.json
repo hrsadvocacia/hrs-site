@@ -1,0 +1,111 @@
+{
+  "_leia_me": "ÚNICA fonte de verdade dos números legais do simulador. Valores confirmados pelo escritório (HRS). O script scripts/validar-parametros.mjs falha se qualquer campo obrigatório ficar pendente. NÃO inventar valores.",
+  "versao": "1.0.0",
+  "_notasLegais": {
+    "prazoRPV": "Prazo legal uniforme de 2 meses (60 dias) para todos os entes — CPC art. 535, §3º, II; Lei 10.259/2001, art. 17 (federal); Lei 12.153/2009, art. 13, I (estadual/municipal).",
+    "regimeEspecial": "O flag afeta o horizonte de pagamento do PRECATÓRIO (EC 136/2025: quitação vinculada a percentual da RCL, sem prazo final fixo), e NÃO o prazo da RPV.",
+    "tetoAplicavel": "Teto observa a lei vigente na data do trânsito em julgado da fase de conhecimento; lei redutora não retroage (STF Tema 792); o valor do salário mínimo é o vigente na data da EXPEDIÇÃO da RPV (CNJ Consulta 0000621-21.2023; Res. 303/2019, art. 47, §3º). A v1 usa o salário mínimo corrente e não faz recomposição histórica — ver premissas exibidas ao usuário."
+  },
+  "salarioMinimo": {
+    "valor": 1621,
+    "vigenciaDesde": "2026-01-01",
+    "fonte": "Decreto nº 12.797/2025"
+  },
+  "entes": [
+    {
+      "id": "uniao-federal",
+      "nome": "União / Autarquias e Fundações Federais",
+      "tetoRPV": {
+        "modo": "salarios_minimos",
+        "quantidade": 60,
+        "fonte": "Lei nº 10.259/2001, art. 3º e art. 17, §1º"
+      },
+      "regimeEspecial": false,
+      "prazoRPVMeses": {
+        "min": 2,
+        "max": 2,
+        "fonte": "CPC art. 535, §3º, II; Lei 10.259/2001, art. 17"
+      }
+    },
+    {
+      "id": "estado-goias",
+      "nome": "Estado de Goiás",
+      "tetoRPV": {
+        "modo": "salarios_minimos",
+        "quantidade": 10,
+        "fonte": "Lei estadual de Goiás nº 23.848/2025 (nova redação ao art. 3º da Lei nº 17.034/2010)"
+      },
+      "regimeEspecial": true,
+      "prazoRPVMeses": {
+        "min": 2,
+        "max": 2,
+        "fonte": "Lei 12.153/2009, art. 13, I"
+      }
+    },
+    {
+      "id": "municipio-goiania",
+      "nome": "Município de Goiânia",
+      "tetoRPV": {
+        "modo": "salarios_minimos",
+        "quantidade": 30,
+        "fonte": "ADCT art. 87, II (default constitucional — não há lei municipal própria); Res. CNJ 303/2019, art. 47, §2º, III"
+      },
+      "regimeEspecial": true,
+      "prazoRPVMeses": {
+        "min": 2,
+        "max": 2,
+        "fonte": "Lei 12.153/2009, art. 13, I"
+      }
+    },
+    {
+      "id": "estado-piaui",
+      "nome": "Estado do Piauí",
+      "tetoRPV": {
+        "modo": "salarios_minimos",
+        "quantidade": 5,
+        "fonte": "Lei estadual do Piauí nº 5.250/2002 (constitucionalidade reconhecida na ADI 2868/PI, STF)"
+      },
+      "regimeEspecial": true,
+      "prazoRPVMeses": {
+        "min": 2,
+        "max": 2,
+        "fonte": "Lei 12.153/2009, art. 13, I"
+      }
+    },
+    {
+      "id": "outro",
+      "nome": "Outro ente devedor",
+      "tetoInformadoPeloUsuario": true,
+      "tetoRPV": {
+        "modo": "salarios_minimos",
+        "quantidade": null,
+        "fonte": "Teto varia conforme a lei local do ente. Referência constitucional supletiva (ADCT art. 87, quando não há lei própria): 30 SM municipal, 40 SM estadual, 60 SM federal."
+      },
+      "regimeEspecial": true,
+      "prazoRPVMeses": {
+        "min": 2,
+        "max": 2,
+        "fonte": "Lei 12.153/2009, art. 13, I"
+      }
+    }
+  ],
+  "cortePrecatorio": {
+    "dataLimiteApresentacao": "02-04",
+    "obs": "Apresentado até 2 de abril → orçamento do ano seguinte. Após 2 de abril → orçamento do ano subsequente (art. 100, §5º, CF). Formato DD-MM. CONFERIR se a EC 136/2025 alterou a data-corte antes do deploy."
+  },
+  "atualizacao": {
+    "indice": "",
+    "juros": "",
+    "fonte": "PREENCHER — índice de correção e juros aplicáveis (v1 NÃO aplica correção; ver premissa no motor)"
+  },
+  "tributacao": {
+    "irrfRRA": {
+      "aplicavel": true,
+      "obs": "Rendimentos Recebidos Acumuladamente — tabela específica. v1 NÃO calcula valor exato (fora de escopo); exibe alerta."
+    },
+    "contribuicaoPrevidenciaria": {
+      "aplicavel": true,
+      "obs": "conforme natureza da verba. v1 NÃO calcula valor exato; exibe alerta."
+    }
+  }
+}

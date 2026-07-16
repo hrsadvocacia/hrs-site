@@ -1,0 +1,14 @@
+{
+  "name": "hrs-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site institucional HRS Advocacia (estático) + Simulador de Precatório/RPV. Sem dependências: o site é servido como arquivos estáticos; estes scripts existem só para testar o motor de cálculo e validar os parâmetros legais.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"simulador/*.test.js\"",
+    "validar-parametros": "node scripts/validar-parametros.mjs",
+    "prebuild": "node scripts/validar-parametros.mjs",
+    "predeploy": "node scripts/validar-parametros.mjs",
+    "serve": "python3 -m http.server 3456"
+  }
+}

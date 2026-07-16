@@ -1,10 +1,15 @@
 {
-  "_leia_me": "ÚNICA fonte de verdade dos números legais do simulador. Campos `null` e fontes começando por 'PREENCHER' são PENDENTES: devem ser preenchidos e conferidos por advogado do escritório contra a legislação vigente (incl. EC 136/2025 e lei estadual de Goiás de nov/2025) ANTES do deploy. O script scripts/validar-parametros.mjs falha se qualquer pendência permanecer. NÃO inventar valores.",
-  "versao": "1.0.0-pendente",
+  "_leia_me": "ÚNICA fonte de verdade dos números legais do simulador. Valores confirmados pelo escritório (HRS). O script scripts/validar-parametros.mjs falha se qualquer campo obrigatório ficar pendente. NÃO inventar valores.",
+  "versao": "1.0.0",
+  "_notasLegais": {
+    "prazoRPV": "Prazo legal uniforme de 2 meses (60 dias) para todos os entes — CPC art. 535, §3º, II; Lei 10.259/2001, art. 17 (federal); Lei 12.153/2009, art. 13, I (estadual/municipal).",
+    "regimeEspecial": "O flag afeta o horizonte de pagamento do PRECATÓRIO (EC 136/2025: quitação vinculada a percentual da RCL, sem prazo final fixo), e NÃO o prazo da RPV.",
+    "tetoAplicavel": "Teto observa a lei vigente na data do trânsito em julgado da fase de conhecimento; lei redutora não retroage (STF Tema 792); o valor do salário mínimo é o vigente na data da EXPEDIÇÃO da RPV (CNJ Consulta 0000621-21.2023; Res. 303/2019, art. 47, §3º). A v1 usa o salário mínimo corrente e não faz recomposição histórica — ver premissas exibidas ao usuário."
+  },
   "salarioMinimo": {
     "valor": 1621,
-    "vigenciaDesde": "",
-    "fonte": "PREENCHER — norma que fixa o salário mínimo de R$ 1.621,00 (valor informado pelo escritório)"
+    "vigenciaDesde": "2026-01-01",
+    "fonte": "Decreto nº 12.797/2025"
   },
   "entes": [
     {
@@ -13,13 +18,13 @@
       "tetoRPV": {
         "modo": "salarios_minimos",
         "quantidade": 60,
-        "fonte": "art. 17, §1º, Lei 10.259/2001"
+        "fonte": "Lei nº 10.259/2001, art. 3º e art. 17, §1º"
       },
       "regimeEspecial": false,
       "prazoRPVMeses": {
-        "min": null,
-        "max": null,
-        "fonte": "PREENCHER — janela estimada de pagamento da RPV federal após expedição (prática do TRF competente)"
+        "min": 2,
+        "max": 2,
+        "fonte": "CPC art. 535, §3º, II; Lei 10.259/2001, art. 17"
       }
     },
     {
@@ -28,13 +33,13 @@
       "tetoRPV": {
         "modo": "salarios_minimos",
         "quantidade": 10,
-        "fonte": "PREENCHER — lei estadual de Goiás (pós-nov/2025) que fixa o teto de RPV estadual (valor informado pelo escritório: 10 salários mínimos)"
+        "fonte": "Lei estadual de Goiás nº 23.848/2025 (nova redação ao art. 3º da Lei nº 17.034/2010)"
       },
-      "regimeEspecial": null,
+      "regimeEspecial": true,
       "prazoRPVMeses": {
-        "min": null,
-        "max": null,
-        "fonte": "PREENCHER — janela estimada de pagamento da RPV estadual após expedição"
+        "min": 2,
+        "max": 2,
+        "fonte": "Lei 12.153/2009, art. 13, I"
       }
     },
     {
@@ -43,13 +48,13 @@
       "tetoRPV": {
         "modo": "salarios_minimos",
         "quantidade": 30,
-        "fonte": "PREENCHER — lei municipal de Goiânia que fixa o teto de RPV municipal (valor informado pelo escritório: 30 salários mínimos)"
+        "fonte": "ADCT art. 87, II (default constitucional — não há lei municipal própria); Res. CNJ 303/2019, art. 47, §2º, III"
       },
-      "regimeEspecial": null,
+      "regimeEspecial": true,
       "prazoRPVMeses": {
-        "min": null,
-        "max": null,
-        "fonte": "PREENCHER — janela estimada de pagamento da RPV municipal após expedição"
+        "min": 2,
+        "max": 2,
+        "fonte": "Lei 12.153/2009, art. 13, I"
       }
     },
     {
@@ -57,29 +62,30 @@
       "nome": "Estado do Piauí",
       "tetoRPV": {
         "modo": "salarios_minimos",
-        "quantidade": null,
-        "fonte": "PREENCHER — lei estadual do Piauí que fixa o teto de RPV estadual"
+        "quantidade": 5,
+        "fonte": "Lei estadual do Piauí nº 5.250/2002 (constitucionalidade reconhecida na ADI 2868/PI, STF)"
       },
-      "regimeEspecial": null,
+      "regimeEspecial": true,
       "prazoRPVMeses": {
-        "min": null,
-        "max": null,
-        "fonte": "PREENCHER — janela estimada de pagamento da RPV estadual após expedição"
+        "min": 2,
+        "max": 2,
+        "fonte": "Lei 12.153/2009, art. 13, I"
       }
     },
     {
       "id": "outro",
       "nome": "Outro ente devedor",
+      "tetoInformadoPeloUsuario": true,
       "tetoRPV": {
         "modo": "salarios_minimos",
         "quantidade": null,
-        "fonte": "PREENCHER — teto de RPV do ente conforme sua lei própria; à falta de lei, aplica-se o parâmetro do art. 87 do ADCT"
+        "fonte": "Teto varia conforme a lei local do ente. Referência constitucional supletiva (ADCT art. 87, quando não há lei própria): 30 SM municipal, 40 SM estadual, 60 SM federal."
       },
-      "regimeEspecial": null,
+      "regimeEspecial": true,
       "prazoRPVMeses": {
-        "min": null,
-        "max": null,
-        "fonte": "PREENCHER — janela estimada de pagamento da RPV após expedição"
+        "min": 2,
+        "max": 2,
+        "fonte": "Lei 12.153/2009, art. 13, I"
       }
     }
   ],

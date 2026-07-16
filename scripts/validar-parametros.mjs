@@ -43,7 +43,9 @@ if (!Array.isArray(params?.entes) || params.entes.length === 0) {
 } else {
   for (const ente of params.entes) {
     const p = `entes[${ente?.id ?? '?'}]`;
-    if (pendente(ente?.tetoRPV?.quantidade)) erros.push(`${p}.tetoRPV.quantidade`);
+    // Entes cujo teto é informado em runtime pelo usuário (ex.: "Outro ente")
+    // não exigem quantidade fixa nos parâmetros.
+    if (!ente?.tetoInformadoPeloUsuario && pendente(ente?.tetoRPV?.quantidade)) erros.push(`${p}.tetoRPV.quantidade`);
     if (pendente(ente?.tetoRPV?.fonte)) erros.push(`${p}.tetoRPV.fonte`);
     if (ente?.regimeEspecial == null) erros.push(`${p}.regimeEspecial`);
     if (pendente(ente?.prazoRPVMeses?.min)) erros.push(`${p}.prazoRPVMeses.min`);

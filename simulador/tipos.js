@@ -58,6 +58,7 @@
  * @property {string}          nome
  * @property {TetoRPV}         tetoRPV
  * @property {boolean | null}  regimeEspecial      regime especial de precatórios (parcelamento). `null` = PENDENTE
+ * @property {boolean}        [tetoInformadoPeloUsuario]  teto não é fixo nos parâmetros (ex.: "Outro ente")
  * @property {FaixaMeses}     [prazoRPVMeses]      janela estimada de pagamento da RPV após expedição
  * @property {FaixaMeses}     [prazoPrecatorioMesesAdicional]  meses adicionais dentro do ano orçamentário (ajuste fino opcional)
  */
@@ -99,6 +100,7 @@
  * @property {number} minMeses
  * @property {number} maxMeses
  * @property {string} textoExplicativo
+ * @property {boolean} [semPrazoFinal]  horizonte aberto (regime especial, EC 136/2025)
  */
 
 /**

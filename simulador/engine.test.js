@@ -8,6 +8,7 @@ import {
   parseISO,
   EntradaInvalidaError,
   ParametroPendenteError,
+  EnteTetoIndefinidoError,
 } from './engine.js';
 
 /**
@@ -40,6 +41,14 @@ const PARAMS = {
       tetoRPV: { modo: 'salarios_minimos', quantidade: null, fonte: 'PREENCHER' },
       regimeEspecial: null,
       prazoRPVMeses: { min: null, max: null },
+    },
+    {
+      id: 'outro',
+      nome: 'Outro ente',
+      tetoInformadoPeloUsuario: true,
+      tetoRPV: { modo: 'salarios_minimos', quantidade: null, fonte: 'varia conforme a lei local' },
+      regimeEspecial: true,
+      prazoRPVMeses: { min: 2, max: 2 },
     },
   ],
   cortePrecatorio: { dataLimiteApresentacao: '02-04', obs: 'FIXTURE' },
@@ -160,6 +169,17 @@ test('ente em regime especial gera alerta de parcelamento', () => {
   assert.ok(r.alertas.some((a) => a.toLowerCase().includes('regime especial')));
 });
 
+test('precatório de ente em regime especial tem horizonte aberto (semPrazoFinal)', () => {
+  const r = simular(
+    entrada({ ente: 'ente-regime-especial', valorBruto: 100000, jaExpedido: true, dataExpedicao: '2025-01-10' }),
+    PARAMS,
+    { hoje: HOJE }
+  );
+  assert.equal(r.faixaPrazo.semPrazoFinal, true);
+  assert.equal(r.faixaPrazo.maxMeses, r.faixaPrazo.minMeses);
+  assert.ok(r.faixaPrazo.textoExplicativo.includes('EC 136/2025'));
+});
+
 // ── Entradas inválidas ───────────────────────────────────────────────────────
 
 test('valor negativo → EntradaInvalidaError', () => {
@@ -203,6 +223,22 @@ test('ente com teto pendente → ParametroPendenteError', () => {
     () => simular(entrada({ ente: 'ente-pendente', valorBruto: 10000 }), PARAMS, { hoje: HOJE }),
     ParametroPendenteError
   );
+});
+
+test('ente com teto informado pelo usuário (sem valor) → EnteTetoIndefinidoError', () => {
+  assert.throws(
+    () => simular(entrada({ ente: 'outro', valorBruto: 10000 }), PARAMS, { hoje: HOJE }),
+    EnteTetoIndefinidoError
+  );
+});
+
+test('prazo de RPV com min === max usa texto "em torno de N meses"', () => {
+  const paramsMesmoPrazo = JSON.parse(JSON.stringify(PARAMS));
+  paramsMesmoPrazo.entes[0].prazoRPVMeses = { min: 2, max: 2 };
+  const r = simular(entrada({ valorBruto: 50000 }), paramsMesmoPrazo, { hoje: HOJE });
+  assert.equal(r.faixaPrazo.minMeses, 2);
+  assert.equal(r.faixaPrazo.maxMeses, 2);
+  assert.ok(r.faixaPrazo.textoExplicativo.includes('em torno de 2 meses'));
 });
 
 test('salário mínimo pendente → ParametroPendenteError', () => {

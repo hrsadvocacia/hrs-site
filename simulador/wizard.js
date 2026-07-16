@@ -6,7 +6,7 @@
  *
  * @module simulador/wizard
  */
-import { simular, ParametroPendenteError, EntradaInvalidaError } from './engine.js';
+import { simular, ParametroPendenteError, EntradaInvalidaError, EnteTetoIndefinidoError } from './engine.js';
 
 /** @typedef {import('./tipos.js').Parametros} Parametros */
 
@@ -38,6 +38,14 @@ const PASSOS = [
 const fmtBRL = (n) => 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 /** @param {string} id */
 const $ = (id) => /** @type {HTMLElement} */ (document.getElementById(id));
+
+/** Texto amigável da faixa de prazo. @param {import('./tipos.js').FaixaPrazo} f */
+function textoFaixaPrazo(f) {
+  const m = (n) => `${n} ${n === 1 ? 'mês' : 'meses'}`;
+  if (f.semPrazoFinal) return `A partir de ${m(f.minMeses)}`;
+  if (f.minMeses === f.maxMeses) return m(f.minMeses);
+  return `${f.minMeses} a ${f.maxMeses} meses`;
+}
 
 /** Máscara de moeda: mantém só dígitos, interpreta como centavos. @param {HTMLInputElement} el */
 function aplicarMascaraMoeda(el) {
@@ -188,7 +196,10 @@ function calcular() {
     alvo.innerHTML = renderResultado(r, entrada);
     ligarLead(entrada, r);
   } catch (e) {
-    if (e instanceof ParametroPendenteError) {
+    if (e instanceof EnteTetoIndefinidoError) {
+      alvo.innerHTML = renderTetoIndefinido();
+      ligarLead(entrada, null);
+    } else if (e instanceof ParametroPendenteError) {
       alvo.innerHTML = renderEmConfiguracao();
     } else if (e instanceof EntradaInvalidaError) {
       alvo.innerHTML = `<div class="sim-config"><h2>Revise os dados</h2><p>${e.message}</p></div>`;
@@ -253,7 +264,7 @@ function renderResultado(r, entrada) {
 
     <div class="res-card">
       <h3>Prazo estimado de recebimento</h3>
-      <p class="res-prazo-faixa">${r.faixaPrazo.minMeses} a ${r.faixaPrazo.maxMeses} meses</p>
+      <p class="res-prazo-faixa">${textoFaixaPrazo(r.faixaPrazo)}</p>
       <p>${r.faixaPrazo.textoExplicativo}</p>
     </div>
 
@@ -287,6 +298,20 @@ function renderLead() {
         <p class="lead-status" id="l-status"></p>
       </form>
     </div>`;
+}
+
+function renderTetoIndefinido() {
+  const ente = PARAMS && PARAMS.entes.find((e) => e.tetoInformadoPeloUsuario);
+  const ref = ente ? ente.tetoRPV.fonte : '';
+  return `
+    <div class="sim-config">
+      <h2>Depende da lei do ente devedor</h2>
+      <p>Para outros entes públicos, o teto que separa RPV de precatório é definido pela <strong>lei local</strong> de cada um, e por isso não é possível classificar automaticamente o seu crédito aqui.</p>
+      <p style="font-size:13px;color:#7d90ad;">${ref}</p>
+      <p>Uma análise dos autos por um advogado permite identificar o teto aplicável ao seu caso e a estimativa de recebimento.</p>
+    </div>
+    <div class="sim-disclaimer">${DISCLAIMER}</div>
+    ${renderLead()}`;
 }
 
 function renderEmConfiguracao() {
@@ -331,7 +356,7 @@ function ligarLead(entrada, r) {
             timestamp: new Date().toISOString(),
             nome, whatsapp: whats, email,
             ente: entrada.ente, natureza: entrada.naturezaCredito,
-            valorBruto: entrada.valorBruto, classificacao: r.classificacao,
+            valorBruto: entrada.valorBruto, classificacao: r ? r.classificacao : 'indefinido',
             consentimentoLGPD: consent, origem: origemUTM(),
             website: honeypot, // repassa o honeypot para a 2ª barreira no servidor
           }),

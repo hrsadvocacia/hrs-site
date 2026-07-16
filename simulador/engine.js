@@ -37,6 +37,19 @@ export class ParametroPendenteError extends Error {
   }
 }
 
+/**
+ * Ente cujo teto de RPV não é fixo nos parâmetros — depende da lei local e não
+ * pôde ser determinado (ex.: "Outro ente"). Não é erro de configuração: a
+ * interface deve exibir uma orientação em vez de uma classificação.
+ */
+export class EnteTetoIndefinidoError extends Error {
+  /** @param {string} message */
+  constructor(message) {
+    super(message);
+    this.name = 'EnteTetoIndefinidoError';
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers de dinheiro (centavos inteiros)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -108,6 +121,11 @@ export function encontrarEnte(params, enteId) {
  */
 export function tetoRPVEmCentavos(ente, params) {
   const teto = ente.tetoRPV;
+  if (ente.tetoInformadoPeloUsuario && teto.quantidade == null) {
+    throw new EnteTetoIndefinidoError(
+      `O teto de RPV do ente "${ente.id}" depende da lei local e não foi determinado.`
+    );
+  }
   if (teto.modo === 'reais') {
     if (teto.quantidade == null) {
       throw new ParametroPendenteError(`Teto de RPV (em reais) do ente "${ente.id}" está PENDENTE em parametros.json.`);
@@ -170,18 +188,23 @@ function prazoPrecatorio(entrada, ente, params, hoje, premissas, alertas) {
     `Com base na data de referência (${refData.toISOString().slice(0, 10)}), o precatório ingressa no orçamento de ${anoOrcamento}.`
   );
 
-  if (ente.regimeEspecial === true) {
-    alertas.push('Ente em regime especial de precatórios: o pagamento pode ser parcelado e se estender além do exercício orçamentário estimado.');
+  const regimeEspecial = ente.regimeEspecial === true;
+  if (regimeEspecial) {
+    alertas.push('Ente em regime especial de precatórios (EC 136/2025): a quitação é vinculada a um percentual da Receita Corrente Líquida, sem prazo final fixo em lei — o horizonte de pagamento é variável e não pode ser garantido.');
   } else if (ente.regimeEspecial == null) {
     alertas.push('O regime de precatórios deste ente ainda não foi confirmado nos parâmetros do simulador.');
   }
 
   return {
     minMeses,
-    maxMeses,
-    textoExplicativo:
-      `Estimativa baseada no ciclo orçamentário: o precatório tende a ser incluído no orçamento de ${anoOrcamento}, ` +
-      `com pagamento previsto ao longo daquele exercício. Prazos podem variar conforme o ente e eventual regime especial.`,
+    maxMeses: regimeEspecial ? minMeses : maxMeses,
+    ...(regimeEspecial ? { semPrazoFinal: true } : {}),
+    textoExplicativo: regimeEspecial
+      ? `A inclusão orçamentária tende a ocorrer a partir de ${anoOrcamento}. Após a EC 136/2025, ` +
+        `o pagamento é feito conforme um percentual da Receita Corrente Líquida do ente, sem data final ` +
+        `definida em lei — por isso o horizonte é variável e não pode ser garantido.`
+      : `Estimativa baseada no ciclo orçamentário: o precatório tende a ser incluído no orçamento de ${anoOrcamento}, ` +
+        `com pagamento previsto ao longo daquele exercício. Prazos podem variar conforme o ente e eventual regime especial.`,
   };
 }
 
@@ -200,12 +223,15 @@ function prazoRPV(entrada, ente, premissas) {
   if (!entrada.jaExpedido) {
     premissas.push('A RPV ainda não foi expedida; o prazo é contado a partir da futura expedição.');
   }
+  const janela = faixa.min === faixa.max
+    ? `em torno de ${faixa.min} ${faixa.max === 1 ? 'mês' : 'meses'}`
+    : `em uma janela estimada de ${faixa.min} a ${faixa.max} meses`;
   return {
     minMeses: faixa.min,
     maxMeses: faixa.max,
     textoExplicativo:
-      `A RPV costuma ser paga em uma janela estimada de ${faixa.min} a ${faixa.max} meses ` +
-      `contados da expedição, sem depender do ciclo orçamentário dos precatórios.`,
+      `A RPV costuma ser paga ${janela} contados da expedição, ` +
+      `sem depender do ciclo orçamentário dos precatórios.`,
   };
 }
 

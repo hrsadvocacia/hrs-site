@@ -19,23 +19,25 @@
 /** @typedef {import('./tipos.js').ResultadoSimulacao} ResultadoSimulacao */
 /** @typedef {import('./tipos.js').CenarioRenuncia} CenarioRenuncia */
 
-/** Entrada inválida fornecida pelo usuário (valor negativo, data futura, etc.). */
-export class EntradaInvalidaError extends Error {
-  /** @param {string} message */
-  constructor(message) {
-    super(message);
-    this.name = 'EntradaInvalidaError';
-  }
-}
+import {
+  EntradaInvalidaError,
+  ParametroPendenteError,
+  reaisParaCentavos,
+  centavosParaReais,
+  parseISO,
+  mesesEntre,
+  apenasData,
+} from './comum.js';
 
-/** Parâmetro legal obrigatório ainda PENDENTE em parametros.json. */
-export class ParametroPendenteError extends Error {
-  /** @param {string} message */
-  constructor(message) {
-    super(message);
-    this.name = 'ParametroPendenteError';
-  }
-}
+// Reexportados para preservar a API pública histórica deste módulo.
+export {
+  EntradaInvalidaError,
+  ParametroPendenteError,
+  reaisParaCentavos,
+  centavosParaReais,
+  parseISO,
+  mesesEntre,
+};
 
 /**
  * Ente cujo teto de RPV não é fixo nos parâmetros — depende da lei local e não
@@ -48,57 +50,6 @@ export class EnteTetoIndefinidoError extends Error {
     super(message);
     this.name = 'EnteTetoIndefinidoError';
   }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers de dinheiro (centavos inteiros)
-// ─────────────────────────────────────────────────────────────────────────────
-
-/** @param {number} reais @returns {number} centavos inteiros */
-export function reaisParaCentavos(reais) {
-  return Math.round(reais * 100);
-}
-
-/** @param {number} centavos @returns {number} reais com 2 casas */
-export function centavosParaReais(centavos) {
-  return Math.round(centavos) / 100;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers de data (UTC, à prova de fuso)
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Converte 'YYYY-MM-DD' em Date (meia-noite UTC). Lança se a data for inválida.
- * @param {string} iso
- * @param {string} campo  nome do campo (para mensagem de erro)
- * @returns {Date}
- */
-export function parseISO(iso, campo) {
-  if (typeof iso !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
-    throw new EntradaInvalidaError(`Data inválida em "${campo}": esperado YYYY-MM-DD, recebido "${iso}".`);
-  }
-  const [a, m, d] = iso.split('-').map(Number);
-  const data = new Date(Date.UTC(a, m - 1, d));
-  if (data.getUTCFullYear() !== a || data.getUTCMonth() !== m - 1 || data.getUTCDate() !== d) {
-    throw new EntradaInvalidaError(`Data inexistente em "${campo}": "${iso}".`);
-  }
-  return data;
-}
-
-/**
- * Meses inteiros de `de` até `ate` (calendário, não fração de 30 dias).
- * @param {Date} de @param {Date} ate @returns {number}
- */
-export function mesesEntre(de, ate) {
-  let meses = (ate.getUTCFullYear() - de.getUTCFullYear()) * 12 + (ate.getUTCMonth() - de.getUTCMonth());
-  if (ate.getUTCDate() < de.getUTCDate()) meses -= 1;
-  return meses;
-}
-
-/** Meia-noite UTC do mesmo dia. @param {Date} d @returns {Date} */
-function apenasData(d) {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

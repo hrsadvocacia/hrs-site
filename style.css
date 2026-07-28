@@ -1302,8 +1302,8 @@ h1, h2, h3, h4 { font-family: 'Cinzel', serif; font-weight: 400; }
   margin: 0 auto;
   padding: 48px 48px 34px;
   display: grid;
-  grid-template-columns: 1.7fr 1fr 1fr 1.3fr;
-  gap: 36px;
+  grid-template-columns: 1.6fr 1fr 1fr 1.15fr 1.25fr;
+  gap: 32px;
 }
 .footer-brand .fb-logo {
   font-family: 'Cinzel', serif;
@@ -1400,6 +1400,10 @@ h1, h2, h3, h4 { font-family: 'Cinzel', serif; font-weight: 400; }
 @media (min-width: 769px) and (max-width: 1024px) {
   .blog-grid { grid-template-columns: repeat(2, 1fr); }
   .valores-grid { grid-template-columns: repeat(3, 1fr); }
+  /* Cinco colunas não cabem em tablet: a marca ocupa a linha e as listas
+     se distribuem em quatro colunas abaixo dela. */
+  .footer-top { grid-template-columns: repeat(4, 1fr); gap: 28px; padding: 40px 28px 30px; }
+  .footer-brand { grid-column: 1 / -1; }
 }
 
 /* ----- Reveal: à prova de falhas (sem JS = visível) ----- */

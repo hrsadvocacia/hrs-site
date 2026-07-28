@@ -1,0 +1,166 @@
+{
+  "_leia_me": "ÚNICA fonte de verdade dos parâmetros legais do Simulador de Verbas Rescisórias. A estrutura da CLT (verbas devidas por modalidade, aviso prévio, FGTS) está preenchida com fundamento legal em cada campo. As TABELAS DE INSS E IRRF ficam PENDENTES até conferência do escritório: enquanto estiverem pendentes, o simulador apresenta o valor BRUTO e informa expressamente que os descontos não foram estimados. NÃO inventar valores.",
+  "versao": "1.0.0",
+  "_notasLegais": {
+    "avisoPrevioProporcional": "A proporcionalidade de 3 dias por ano trabalhado (Lei 12.506/2011) é benefício EXCLUSIVO do empregado. No pedido de demissão, o aviso devido ao empregador é de 30 dias (Nota Técnica MTE/SRT nº 184/2012).",
+    "projecaoAvisoIndenizado": "O aviso prévio indenizado integra o tempo de serviço para todos os efeitos legais (CLT art. 487, §1º; Súmula 371 do TST), projetando a data de saída e gerando avos adicionais de 13º e de férias proporcionais.",
+    "projecaoNoAcordo": "No acordo do art. 484-A da CLT o aviso indenizado é devido pela metade. A projeção do período reduzido é ponto controvertido: o simulador projeta os dias efetivamente indenizados e alerta o usuário.",
+    "feriasNaJustaCausa": "Na dispensa por justa causa não são devidas as férias PROPORCIONAIS (Súmula 171 do TST), mas as férias VENCIDAS e não gozadas continuam devidas, acrescidas de um terço.",
+    "feriasNoPedidoDeDemissao": "O empregado que pede demissão tem direito às férias proporcionais, ainda que com menos de um ano de serviço (Súmula 261 do TST).",
+    "saldoFGTS": "A multa rescisória incide sobre o saldo da conta vinculada, que inclui correção monetária e rendimentos e desconta saques anteriores. Quando o usuário não informa o saldo, o simulador estima 8% da remuneração por mês de contrato, o que IGNORA correção e saques — daí o alerta exibido.",
+    "tabelasFiscais": "INSS e IRRF são atualizados por ato do Executivo. Enquanto tabelaINSS.faixas / tabelaIRRF.faixas estiverem vazias, o motor não calcula descontos e o resultado é apresentado como BRUTO."
+  },
+
+  "remuneracao": {
+    "divisorMensal": 30,
+    "fonte": "CLT art. 64 (salário-dia = salário mensal dividido por 30) e art. 487, §1º"
+  },
+
+  "avisoPrevio": {
+    "diasBase": 30,
+    "diasAdicionaisPorAnoCompleto": 3,
+    "diasMaximo": 90,
+    "fonte": "CLT art. 487, II; Lei nº 12.506/2011, art. 1º e parágrafo único"
+  },
+
+  "ferias": {
+    "adicionalFracao": { "numerador": 1, "denominador": 3 },
+    "fonte": "CF art. 7º, XVII; CLT art. 146, parágrafo único"
+  },
+
+  "decimoTerceiro": {
+    "avosPorAno": 12,
+    "diasMinimosParaAvo": 15,
+    "fonte": "Lei nº 4.090/1962, art. 1º, §§ 1º e 2º, e art. 3º"
+  },
+
+  "fgts": {
+    "aliquotaDepositoPct": 8,
+    "fonte": "Lei nº 8.036/1990, art. 15",
+    "incideSobreVerbas": ["saldo_salario", "aviso_previo_indenizado", "decimo_terceiro_proporcional"],
+    "fonteIncidencia": "Lei nº 8.036/1990, art. 15, §6º; Súmula 305 do TST (incidência sobre o aviso prévio indenizado)"
+  },
+
+  "modalidades": {
+    "sem_justa_causa": {
+      "rotulo": "Dispensa sem justa causa",
+      "descricao": "O empregador encerra o contrato sem alegar falta grave do empregado.",
+      "avisoPrevio": { "devidoPor": "empregador", "fator": 1, "proporcional": true, "projeta": true },
+      "saldoSalario": true,
+      "decimoTerceiroProporcional": true,
+      "feriasVencidas": true,
+      "feriasProporcionais": true,
+      "multaFGTSPct": 40,
+      "saqueFGTSPct": 100,
+      "seguroDesemprego": true,
+      "fonte": "CLT arts. 477, 487 e 488; Lei nº 8.036/1990, art. 18, §1º; Lei nº 7.998/1990, art. 3º"
+    },
+    "rescisao_indireta": {
+      "rotulo": "Rescisão indireta",
+      "descricao": "O empregado rompe o contrato por falta grave do empregador, reconhecida na Justiça. Os efeitos são os da dispensa sem justa causa.",
+      "avisoPrevio": { "devidoPor": "empregador", "fator": 1, "proporcional": true, "projeta": true },
+      "saldoSalario": true,
+      "decimoTerceiroProporcional": true,
+      "feriasVencidas": true,
+      "feriasProporcionais": true,
+      "multaFGTSPct": 40,
+      "saqueFGTSPct": 100,
+      "seguroDesemprego": true,
+      "fonte": "CLT art. 483 e §§; Lei nº 8.036/1990, art. 18, §1º c/c art. 20, I"
+    },
+    "acordo": {
+      "rotulo": "Acordo entre as partes (art. 484-A da CLT)",
+      "descricao": "Distrato consensual: o aviso indenizado e a multa do FGTS caem pela metade, o saque é parcial e não há seguro-desemprego.",
+      "avisoPrevio": { "devidoPor": "empregador", "fator": 0.5, "proporcional": true, "projeta": true },
+      "saldoSalario": true,
+      "decimoTerceiroProporcional": true,
+      "feriasVencidas": true,
+      "feriasProporcionais": true,
+      "multaFGTSPct": 20,
+      "saqueFGTSPct": 80,
+      "seguroDesemprego": false,
+      "fonte": "CLT art. 484-A, I, II, §§ 1º e 2º (redação da Lei nº 13.467/2017)"
+    },
+    "pedido_demissao": {
+      "rotulo": "Pedido de demissão",
+      "descricao": "O empregado pede para sair. Não há multa do FGTS, saque nem seguro-desemprego, e o aviso prévio é devido ao empregador.",
+      "avisoPrevio": { "devidoPor": "empregado", "fator": 1, "proporcional": false, "projeta": false },
+      "saldoSalario": true,
+      "decimoTerceiroProporcional": true,
+      "feriasVencidas": true,
+      "feriasProporcionais": true,
+      "multaFGTSPct": 0,
+      "saqueFGTSPct": 0,
+      "seguroDesemprego": false,
+      "fonte": "CLT arts. 477 e 487, §2º; Súmula 261 do TST; Lei nº 8.036/1990, art. 20 (hipóteses de saque)"
+    },
+    "justa_causa": {
+      "rotulo": "Dispensa por justa causa",
+      "descricao": "O empregador alega falta grave do empregado (CLT art. 482). Restam apenas o saldo de salário e as férias vencidas.",
+      "avisoPrevio": { "devidoPor": "nenhum", "fator": 0, "proporcional": false, "projeta": false },
+      "saldoSalario": true,
+      "decimoTerceiroProporcional": false,
+      "feriasVencidas": true,
+      "feriasProporcionais": false,
+      "multaFGTSPct": 0,
+      "saqueFGTSPct": 0,
+      "seguroDesemprego": false,
+      "fonte": "CLT art. 482; Lei nº 4.090/1962, art. 3º; Súmula 171 do TST"
+    }
+  },
+
+  "incidencias": {
+    "saldo_salario": {
+      "inss": true,
+      "irrf": true,
+      "fonte": "Lei nº 8.212/1991, art. 28, I (natureza salarial); RIR/2018, art. 681"
+    },
+    "decimo_terceiro_proporcional": {
+      "inss": true,
+      "irrf": true,
+      "tributacaoExclusiva": true,
+      "fonte": "Lei nº 8.212/1991, art. 28, §7º; Lei nº 7.713/1988, art. 26 (tributação exclusiva na fonte)"
+    },
+    "aviso_previo_indenizado": {
+      "inss": false,
+      "irrf": null,
+      "fonte": "STJ, REsp 1.230.957/RS (Tema 478) — não incide contribuição previdenciária sobre o aviso prévio indenizado. Incidência de IRRF a confirmar pelo escritório."
+    },
+    "ferias_vencidas_indenizadas": {
+      "inss": false,
+      "irrf": false,
+      "fonte": "Lei nº 8.212/1991, art. 28, §9º, 'd'; Súmula 386 do STJ"
+    },
+    "ferias_proporcionais_indenizadas": {
+      "inss": false,
+      "irrf": false,
+      "fonte": "Lei nº 8.212/1991, art. 28, §9º, 'd'; Súmula 386 do STJ"
+    },
+    "terco_ferias_indenizadas": {
+      "inss": false,
+      "irrf": false,
+      "fonte": "Lei nº 8.212/1991, art. 28, §9º, 'd'; Súmula 386 do STJ"
+    }
+  },
+
+  "tabelaINSS": {
+    "competencia": "",
+    "faixas": [],
+    "fonte": "PREENCHER — tabela de contribuição do segurado empregado vigente (alíquotas progressivas por faixa). Formato: [{ \"ate\": 0000.00, \"aliquotaPct\": 0.0 }, ...], última faixa = teto."
+  },
+
+  "tabelaIRRF": {
+    "competencia": "",
+    "faixas": [],
+    "deducaoPorDependente": null,
+    "descontoSimplificado": null,
+    "fonte": "PREENCHER — tabela progressiva mensal do IRRF vigente. Formato: [{ \"ate\": 0000.00, \"aliquotaPct\": 0.0, \"deduzir\": 0.00 }, ...], última faixa com \"ate\": null."
+  },
+
+  "prazoPagamento": {
+    "dias": 10,
+    "contadoDe": "término do contrato",
+    "multaAtraso": "um salário do empregado, em seu favor",
+    "fonte": "CLT art. 477, §6º e §8º (redação da Lei nº 13.467/2017)"
+  }
+}

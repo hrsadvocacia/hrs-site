@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Verbas Rescis&oacute;rias &mdash; HRS Advocacia</title>
+  <meta name="description" content="Ferramenta gratuita e informativa: calcule uma estimativa das suas verbas rescis&oacute;rias &mdash; saldo de sal&aacute;rio, aviso pr&eacute;vio, 13&ordm;, f&eacute;rias, FGTS e multa &mdash; conforme o tipo de rescis&atilde;o. HRS Advocacia." />
+  <link rel="canonical" href="https://hrsadvocacia.adv.br/simulador-rescisao.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Simulador de Verbas Rescis&oacute;rias &mdash; HRS Advocacia" />
+  <meta property="og:description" content="Descubra quais verbas s&atilde;o devidas na sua rescis&atilde;o e uma estimativa de valores. Ferramenta gratuita e informativa." />
+  <meta property="og:url" content="https://hrsadvocacia.adv.br/simulador-rescisao.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="simulador.css" />
+  <script>document.documentElement.classList.add('js');</script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Simulador de Verbas Rescisórias",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" },
+    "provider": { "@type": "LegalService", "name": "HRS Advocacia & Consultoria Jurídica" },
+    "description": "Ferramenta informativa e gratuita para estimar as verbas devidas no fim do contrato de trabalho conforme a modalidade de rescisão."
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Quais verbas eu recebo se for demitido sem justa causa?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Em regra: saldo de salário dos dias trabalhados, aviso prévio de 30 dias mais 3 por ano completo de casa, 13º salário proporcional, férias vencidas e proporcionais acrescidas de um terço, saque integral do FGTS com multa de 40% e habilitação ao seguro-desemprego, se preenchidos os requisitos." }
+      },
+      {
+        "@type": "Question",
+        "name": "Quem pede demissão perde as férias proporcionais?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Não. Segundo a Súmula 261 do TST, o empregado que pede demissão tem direito às férias proporcionais, ainda que tenha menos de um ano de serviço. O que ele não recebe é a multa de 40% do FGTS, o saque do saldo e o seguro-desemprego, e ainda deve o aviso prévio de 30 dias ao empregador." }
+      },
+      {
+        "@type": "Question",
+        "name": "Na justa causa eu perco tudo?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Não. Mesmo na dispensa por justa causa continuam devidos o saldo de salário e as férias vencidas e não gozadas, acrescidas de um terço (Súmula 171 do TST). O que se perde são o aviso prévio, o 13º proporcional, as férias proporcionais, a multa do FGTS, o saque e o seguro-desemprego." }
+      },
+      {
+        "@type": "Question",
+        "name": "O que muda no acordo do artigo 484-A da CLT?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No distrato consensual o aviso prévio indenizado é devido pela metade, a multa do FGTS cai de 40% para 20% e o saque fica limitado a 80% do saldo. As demais verbas são pagas integralmente, mas não há direito ao seguro-desemprego." }
+      },
+      {
+        "@type": "Question",
+        "name": "O simulador informa um valor exato e definitivo?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Não. O resultado é uma estimativa informativa. Adicionais de insalubridade, periculosidade e noturno, horas extras não pagas, benefícios da convenção coletiva e estabilidades podem alterar bastante o valor, e só a análise dos documentos por um advogado permite conclusão segura." }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-hrs">HRS</span>
+        <span class="logo-text">
+          <span>Advocacia &amp;</span>
+          <span>Consultoria Jur&iacute;dica</span>
+        </span>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">In&iacute;cio</a></li>
+        <li><a href="sobre.html">Sobre</a></li>
+        <li><a href="areas.html">&Aacute;reas</a></li>
+        <li><a href="equipe.html">Equipe</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="contato.html">Contato</a></li>
+      </ul>
+      <a href="https://wa.me/5586999854705" target="_blank" rel="noopener" class="btn-nav-cta">Fale Conosco</a>
+      <button class="hamburger" id="hamburger" aria-label="Abrir menu"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <header class="sim-hero">
+    <div class="sim-hero-inner">
+      <p class="eyebrow">Ferramenta gratuita e informativa</p>
+      <h1>Simulador de <span class="gold">Verbas Rescis&oacute;rias</span></h1>
+      <p>Seu contrato de trabalho terminou e voc&ecirc; quer saber se o valor oferecido est&aacute; certo? Responda tr&ecirc;s perguntas e veja quais verbas s&atilde;o devidas no seu caso, com o c&aacute;lculo de cada uma explicado.</p>
+    </div>
+  </header>
+
+  <main class="sim-shell">
+
+    <!-- Barra de progresso -->
+    <ul class="sim-progress" id="simProgress" aria-hidden="true">
+      <li class="current"></li><li></li><li></li><li></li>
+    </ul>
+    <p class="sim-progress-label" id="simStepLabel">Passo 1 de 4 &middot; Como o contrato terminou?</p>
+
+    <form id="simForm" novalidate>
+
+      <!-- PASSO 1 -->
+      <section class="sim-step" id="step1" data-step="1">
+        <h2>Como o contrato terminou?</h2>
+        <p class="sim-help">A modalidade da rescis&atilde;o &eacute; o que mais influencia o resultado: ela define quais verbas s&atilde;o devidas, se h&aacute; multa do FGTS e se cabe seguro-desemprego.</p>
+        <div class="sim-field">
+          <span class="sim-legend" id="lbl-modalidade">Modalidade da rescis&atilde;o</span>
+          <div class="sim-options" id="opcoesModalidade" role="radiogroup" aria-labelledby="lbl-modalidade"></div>
+          <p class="sim-inline-error" id="err-modalidade" hidden>Escolha como o contrato terminou.</p>
+        </div>
+      </section>
+
+      <!-- PASSO 2 -->
+      <section class="sim-step" id="step2" data-step="2" hidden>
+        <h2>Contrato e remunera&ccedil;&atilde;o</h2>
+        <p class="sim-help">As datas definem o tempo de casa, os avos de 13&ordm; e as f&eacute;rias proporcionais. A remunera&ccedil;&atilde;o &eacute; a base de todas as verbas.</p>
+
+        <div class="sim-field">
+          <label for="f-salario">&Uacute;ltimo sal&aacute;rio mensal (R$)</label>
+          <input type="text" id="f-salario" name="salario" inputmode="decimal" autocomplete="off" placeholder="R$ 0,00" />
+          <p class="sim-inline-error" id="err-salario" hidden>Informe um sal&aacute;rio maior que zero.</p>
+        </div>
+
+        <div class="sim-field">
+          <label for="f-admissao">Data de admiss&atilde;o</label>
+          <input type="date" id="f-admissao" name="admissao" />
+          <p class="sim-inline-error" id="err-admissao" hidden>Informe uma data v&aacute;lida, n&atilde;o futura.</p>
+        </div>
+
+        <div class="sim-field">
+          <label for="f-saida">&Uacute;ltimo dia de trabalho</label>
+          <input type="date" id="f-saida" name="saida" />
+          <p class="sim-inline-error" id="err-saida" hidden>Informe uma data v&aacute;lida, igual ou posterior &agrave; admiss&atilde;o.</p>
+        </div>
+
+        <details class="sim-field">
+          <summary class="sim-legend" style="cursor:pointer;">Opcional: horas extras, comiss&otilde;es e adicionais habituais</summary>
+          <div style="margin-top:14px;">
+            <div class="sim-field">
+              <label for="f-medias">M&eacute;dia mensal dessas verbas (R$)</label>
+              <input type="text" id="f-medias" name="medias" inputmode="decimal" autocomplete="off" placeholder="R$ 0,00" />
+              <p class="sim-help" style="margin-top:8px;margin-bottom:0;">Horas extras, comiss&otilde;es, adicional noturno, de insalubridade ou de periculosidade pagos com habitualidade entram na base de c&aacute;lculo das verbas rescis&oacute;rias. Informe a m&eacute;dia mensal dos &uacute;ltimos meses, se houver.</p>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- PASSO 3 -->
+      <section class="sim-step" id="step3" data-step="3" hidden>
+        <h2>Aviso pr&eacute;vio, f&eacute;rias e FGTS</h2>
+        <p class="sim-help">Faltam poucos detalhes para fechar a estimativa.</p>
+
+        <div class="sim-field" id="wrap-aviso">
+          <span class="sim-legend" id="lbl-aviso">Como ficou o aviso pr&eacute;vio?</span>
+          <div class="sim-options" id="opcoesAviso" role="radiogroup" aria-labelledby="lbl-aviso"></div>
+        </div>
+
+        <div class="sim-field">
+          <label for="f-feriasVencidas">Per&iacute;odos de f&eacute;rias vencidas e n&atilde;o gozadas</label>
+          <input type="number" id="f-feriasVencidas" name="feriasVencidas" min="0" max="2" step="1" value="0" />
+          <p class="sim-help" style="margin-top:8px;margin-bottom:0;">Cada 12 meses completos de trabalho geram um per&iacute;odo de f&eacute;rias. Conte aqui quantos per&iacute;odos voc&ecirc; completou e <strong>n&atilde;o tirou</strong>. Se sempre tirou f&eacute;rias em dia, deixe zero.</p>
+          <p class="sim-inline-error" id="err-feriasVencidas" hidden>Informe 0, 1 ou 2 per&iacute;odos.</p>
+        </div>
+
+        <div class="sim-field">
+          <label for="f-fgts">Saldo do FGTS (R$) &mdash; opcional</label>
+          <input type="text" id="f-fgts" name="fgts" inputmode="decimal" autocomplete="off" placeholder="R$ 0,00" />
+          <p class="sim-help" style="margin-top:8px;margin-bottom:0;">Consulte no aplicativo do FGTS. Se deixar em branco, o simulador estima o saldo pelos dep&oacute;sitos do per&iacute;odo &mdash; uma aproxima&ccedil;&atilde;o grosseira, que ignora corre&ccedil;&atilde;o e saques anteriores.</p>
+        </div>
+      </section>
+
+      <!-- Navega&ccedil;&atilde;o -->
+      <div class="sim-nav">
+        <button type="button" class="sim-btn sim-btn-back" id="btnBack" hidden>&larr; Voltar</button>
+        <span style="flex:1"></span>
+        <button type="button" class="sim-btn sim-btn-next" id="btnNext">Avan&ccedil;ar &rarr;</button>
+        <button type="submit" class="sim-btn sim-btn-next" id="btnCalc" hidden>Calcular estimativa</button>
+      </div>
+    </form>
+
+    <!-- RESULTADO -->
+    <section class="sim-result" id="simResult" hidden aria-live="polite" tabindex="-1"></section>
+
+  </main>
+
+  <!-- Conte&uacute;do SEO + FAQ -->
+  <section class="sim-conteudo">
+    <div class="section-inner">
+      <p class="section-label">Entenda</p>
+      <h2>Verbas rescis&oacute;rias: o que muda conforme o motivo da sa&iacute;da</h2>
+      <p>Quando um contrato de trabalho termina, o empregador precisa acertar as chamadas <strong>verbas rescis&oacute;rias</strong>. O que entra nessa conta n&atilde;o depende s&oacute; do sal&aacute;rio e do tempo de casa: depende, principalmente, de <strong>como</strong> o contrato terminou. Uma mesma pessoa, com o mesmo sal&aacute;rio e o mesmo tempo de empresa, recebe valores muito diferentes conforme tenha sido dispensada sem justa causa, tenha pedido demiss&atilde;o ou tenha feito um acordo.</p>
+
+      <h3>Dispensa sem justa causa</h3>
+      <p>&Eacute; a hip&oacute;tese mais protetiva. O trabalhador recebe o saldo de sal&aacute;rio dos dias trabalhados, o aviso pr&eacute;vio, o 13&ordm; sal&aacute;rio proporcional, as f&eacute;rias vencidas e proporcionais com o ter&ccedil;o constitucional, saca integralmente o FGTS com a multa de 40% e pode requerer o seguro-desemprego, se preencher os requisitos.</p>
+      <p>O aviso pr&eacute;vio &eacute; de 30 dias, acrescidos de 3 dias por ano completo de servi&ccedil;o, at&eacute; o limite de 90 dias (Lei n&ordm; 12.506/2011). Quando indenizado, ele <strong>projeta</strong> o contrato: o tempo de servi&ccedil;o &eacute; contado como se o aviso tivesse sido trabalhado (art. 487, &sect;1&ordm;, da CLT e S&uacute;mula 371 do TST), o que costuma gerar avos a mais de 13&ordm; e de f&eacute;rias. &Eacute; um detalhe que passa despercebido com frequ&ecirc;ncia e faz diferen&ccedil;a real no valor.</p>
+
+      <h3>Pedido de demiss&atilde;o</h3>
+      <p>Quem pede para sair mant&eacute;m o saldo de sal&aacute;rio, o 13&ordm; proporcional e as f&eacute;rias vencidas e proporcionais com um ter&ccedil;o &mdash; a S&uacute;mula 261 do TST garante as proporcionais mesmo com menos de um ano de casa. N&atilde;o h&aacute;, por&eacute;m, multa de 40%, saque do FGTS nem seguro-desemprego. Al&eacute;m disso, o aviso pr&eacute;vio passa a ser devido <em>ao empregador</em>: se n&atilde;o for cumprido, 30 dias de remunera&ccedil;&atilde;o podem ser descontados (art. 487, &sect;2&ordm;, da CLT).</p>
+
+      <h3>Dispensa por justa causa</h3>
+      <p>&Eacute; a hip&oacute;tese mais restritiva, mas n&atilde;o se perde tudo. Continuam devidos o <strong>saldo de sal&aacute;rio</strong> e as <strong>f&eacute;rias vencidas</strong> e n&atilde;o gozadas, acrescidas de um ter&ccedil;o (S&uacute;mula 171 do TST). Perdem-se o aviso pr&eacute;vio, o 13&ordm; proporcional, as f&eacute;rias proporcionais, a multa do FGTS, o saque e o seguro-desemprego. Vale lembrar que a justa causa exige falta grave enquadrada no art. 482 da CLT e pode ser discutida judicialmente.</p>
+
+      <h3>Acordo entre as partes (art. 484-A da CLT)</h3>
+      <p>Criado pela reforma trabalhista, o distrato consensual &eacute; um meio-termo: o aviso pr&eacute;vio indenizado &eacute; devido <strong>pela metade</strong>, a multa do FGTS cai de 40% para <strong>20%</strong> e o saque fica limitado a <strong>80%</strong> do saldo. As demais verbas s&atilde;o integrais, mas <strong>n&atilde;o h&aacute; seguro-desemprego</strong>. &Eacute; uma op&ccedil;&atilde;o que pode ser vantajosa em algumas situa&ccedil;&otilde;es e claramente desvantajosa em outras &mdash; especialmente quando o acordo &eacute; usado para mascarar uma dispensa sem justa causa.</p>
+
+      <h3>Rescis&atilde;o indireta</h3>
+      <p>Quando &eacute; o empregador quem comete falta grave &mdash; atraso reiterado de sal&aacute;rios, aus&ecirc;ncia de dep&oacute;sitos do FGTS, exig&ecirc;ncia de servi&ccedil;os al&eacute;m das for&ccedil;as, rigor excessivo, ass&eacute;dio &mdash; o empregado pode pedir na Justi&ccedil;a o reconhecimento da <strong>rescis&atilde;o indireta</strong> (art. 483 da CLT). Reconhecida, ela produz os mesmos efeitos da dispensa sem justa causa, com todas as verbas, multa de 40% e seguro-desemprego.</p>
+
+      <h3>O que este simulador n&atilde;o calcula</h3>
+      <p>A ferramenta trabalha com as verbas t&iacute;picas do t&eacute;rmino do contrato. Ela n&atilde;o conhece o seu contrato nem a conven&ccedil;&atilde;o coletiva da sua categoria, e por isso n&atilde;o inclui horas extras n&atilde;o pagas, adicionais devidos e n&atilde;o quitados, benef&iacute;cios normativos, multas convencionais, estabilidades (gestante, acidente de trabalho, dirigente sindical) nem eventuais reflexos dessas parcelas. Esses pontos costumam ser exatamente onde est&atilde;o as diferen&ccedil;as mais relevantes &mdash; e s&oacute; aparecem na an&aacute;lise dos documentos.</p>
+
+      <h3>Prazo de pagamento</h3>
+      <p>As verbas devem ser pagas em at&eacute; <strong>10 dias</strong> contados do t&eacute;rmino do contrato (art. 477, &sect;6&ordm;, da CLT). O atraso gera multa em favor do trabalhador, no valor de um sal&aacute;rio (art. 477, &sect;8&ordm;). Vale guardar o termo de rescis&atilde;o, os comprovantes de pagamento e o extrato do FGTS.</p>
+
+      <div class="sim-faq" style="margin-top:26px;">
+        <h2>Perguntas frequentes</h2>
+        <details><summary>Quais verbas eu recebo se for demitido sem justa causa?</summary><p>Em regra: saldo de sal&aacute;rio dos dias trabalhados, aviso pr&eacute;vio de 30 dias mais 3 por ano completo de casa, 13&ordm; sal&aacute;rio proporcional, f&eacute;rias vencidas e proporcionais acrescidas de um ter&ccedil;o, saque integral do FGTS com multa de 40% e habilita&ccedil;&atilde;o ao seguro-desemprego, se preenchidos os requisitos.</p></details>
+        <details><summary>Quem pede demiss&atilde;o perde as f&eacute;rias proporcionais?</summary><p>N&atilde;o. Segundo a S&uacute;mula 261 do TST, o empregado que pede demiss&atilde;o tem direito &agrave;s f&eacute;rias proporcionais, ainda que tenha menos de um ano de servi&ccedil;o. O que ele n&atilde;o recebe &eacute; a multa de 40% do FGTS, o saque do saldo e o seguro-desemprego, e ainda deve o aviso pr&eacute;vio de 30 dias ao empregador.</p></details>
+        <details><summary>Na justa causa eu perco tudo?</summary><p>N&atilde;o. Mesmo na dispensa por justa causa continuam devidos o saldo de sal&aacute;rio e as f&eacute;rias vencidas e n&atilde;o gozadas, acrescidas de um ter&ccedil;o (S&uacute;mula 171 do TST). O que se perde s&atilde;o o aviso pr&eacute;vio, o 13&ordm; proporcional, as f&eacute;rias proporcionais, a multa do FGTS, o saque e o seguro-desemprego.</p></details>
+        <details><summary>O que muda no acordo do artigo 484-A da CLT?</summary><p>No distrato consensual o aviso pr&eacute;vio indenizado &eacute; devido pela metade, a multa do FGTS cai de 40% para 20% e o saque fica limitado a 80% do saldo. As demais verbas s&atilde;o pagas integralmente, mas n&atilde;o h&aacute; direito ao seguro-desemprego.</p></details>
+        <details><summary>O simulador informa um valor exato e definitivo?</summary><p>N&atilde;o. O resultado &eacute; uma estimativa informativa. Adicionais de insalubridade, periculosidade e noturno, horas extras n&atilde;o pagas, benef&iacute;cios da conven&ccedil;&atilde;o coletiva e estabilidades podem alterar bastante o valor, e s&oacute; a an&aacute;lise dos documentos por um advogado permite conclus&atilde;o segura.</p></details>
+        <details><summary>Preciso informar meus dados para ver o resultado?</summary><p>N&atilde;o. O resultado aparece integralmente antes de qualquer cadastro. Se quiser uma an&aacute;lise do seu caso concreto, voc&ecirc; pode, por sua iniciativa, entrar em contato com o escrit&oacute;rio.</p></details>
+      </div>
+
+      <p style="margin-top:24px;"><a href="post-rescisao.html" class="link-more">Leia tamb&eacute;m: fui demitido, quais s&atilde;o os meus direitos? &rarr;</a></p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="fb-logo">HRS</span>
+        <p>Advocacia &amp; Consultoria Jur&iacute;dica &mdash; Holanda, Ramalho &amp; Sousa. Atua&ccedil;&atilde;o em Piau&iacute;, Maranh&atilde;o e Goi&aacute;s, com atendimento personalizado em cada caso.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Navega&ccedil;&atilde;o</h5>
+        <ul>
+          <li><a href="index.html">In&iacute;cio</a></li>
+          <li><a href="sobre.html">Sobre</a></li>
+          <li><a href="areas.html">&Aacute;reas de Atua&ccedil;&atilde;o</a></li>
+          <li><a href="equipe.html">Equipe</a></li>
+          <li><a href="blog.html">Blog Jur&iacute;dico</a></li>
+          <li><a href="contato.html">Contato</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>&Aacute;reas</h5>
+        <ul>
+          <li><a href="areas.html">Trabalhista</a></li>
+          <li><a href="areas.html">Fam&iacute;lia</a></li>
+          <li><a href="areas.html">Previdenci&aacute;rio</a></li>
+          <li><a href="areas.html">Imobili&aacute;rio</a></li>
+          <li><a href="areas.html">C&iacute;vel</a></li>
+          <li><a href="areas.html">Empresarial</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Ferramentas</h5>
+        <ul>
+          <li><a href="simulador-precatorio.html">Simulador de Precat&oacute;rio e RPV</a></li>
+          <li><a href="simulador-rescisao.html">Simulador de Verbas Rescis&oacute;rias</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Unidades</h5>
+        <ul>
+          <li><a href="https://wa.me/5586999854705" target="_blank" rel="noopener">Teresina &ndash; PI<br>(86) 99985-4705</a></li>
+          <li><a href="https://wa.me/5586988064858" target="_blank" rel="noopener">Timon &ndash; MA<br>(86) 98806-4858</a></li>
+          <li><a href="https://wa.me/5562983298288" target="_blank" rel="noopener">Goi&acirc;nia &ndash; GO<br>(62) 98329-8288</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-bottom-inner">
+        <div class="footer-bottom-row">
+          <p class="footer-copy">&copy; 2026 HRS Advocacia &amp; Consultoria Jur&iacute;dica &middot; Todos os direitos reservados</p>
+          <p class="footer-oab">OAB/PI 8.815 &middot; OAB/PI 22.759 &middot; OAB/GO 76.478</p>
+        </div>
+        <p class="footer-disclaimer">Este site tem car&aacute;ter exclusivamente informativo, em conformidade com o C&oacute;digo de &Eacute;tica e Disciplina da OAB e o Provimento n&ordm; 205/2021. As informa&ccedil;&otilde;es aqui apresentadas n&atilde;o constituem oferta, capta&ccedil;&atilde;o de clientela ou promessa de resultado. Cada caso &eacute; analisado de acordo com suas particularidades.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script type="module" src="simulador/rescisao-wizard.js"></script>
+</body>
+</html>

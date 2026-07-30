@@ -1,0 +1,21 @@
+{
+  "name": "hrs-interno",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sistema interno de gestao do HRS Advocacia. Projeto Vercel separado do site institucional: variaveis de ambiente, protecao por IP/WAF, cadencia de deploy e logs isolados.",
+  "scripts": {
+    "prisma:validate": "prisma validate",
+    "prisma:format": "prisma format",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "test:invariantes": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f prisma/testes/invariantes.sql",
+    "migrate:deploy": "prisma migrate deploy"
+  },
+  "devDependencies": {
+    "dotenv": "^17.4.2",
+    "prisma": "^7.9.1"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.9.1"
+  }
+}

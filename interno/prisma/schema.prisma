@@ -1,0 +1,1399 @@
+// =============================================================================
+// HRS Advocacia & Consultoria Juridica — Sistema interno de gestao
+// -----------------------------------------------------------------------------
+// PRINCIPIO ESTRUTURANTE: o sistema assiste; o advogado decide.
+// Nenhum prazo de origem automatica e valido sem confirmacao humana nominal.
+// Nenhum prazo e apagado. Nenhuma data e exibida sem os insumos do calculo.
+//
+// LGPD — bases legais por natureza de tratamento (detalhe em docs/LGPD.md):
+//   - Dados cadastrais de cliente ......... art. 7, V   (execucao de contrato)
+//   - Dados fiscais / financeiros ......... art. 7, II  (obrigacao legal)
+//   - Dados de saude (CID, laudos) ........ art. 11, II, "d" (exercicio regular
+//     de direitos em processo judicial) — tabela apartada e cifrada
+//   - Leads de simulador .................. art. 7, I   (consentimento)
+//   - Log de auditoria .................... art. 7, II / art. 16, I
+//
+// Sigilo profissional: art. 34, VII, EAOAB.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================================================
+// 1. IDENTIDADE, PERFIS E CONTROLE DE ACESSO
+// =============================================================================
+
+enum Unidade {
+  GOIANIA
+  TERESINA
+  TIMON
+}
+
+enum PerfilUsuario {
+  SOCIO
+  ADVOGADO
+  ESTAGIARIO
+  FINANCEIRO
+  ADMIN
+}
+
+model Usuario {
+  id      String        @id @default(uuid()) @db.Uuid
+  nome    String
+  email   String        @unique
+  perfil  PerfilUsuario
+  unidade Unidade
+  ativo   Boolean       @default(true)
+
+  senhaHash         String
+  senhaAtualizadaEm DateTime @default(now())
+
+  // 2FA TOTP obrigatorio para todos os perfis. O segredo e cifrado na aplicacao
+  // (AES-256-GCM); `totpVersaoChave` permite rotacao da chave mestra sem
+  // reescrever historico. Nunca armazenado em claro.
+  totpSegredoCifrado    Bytes?
+  totpVersaoChave       Int?
+  totpAtivadoEm         DateTime?
+  totpUltimoContador    BigInt? // anti-replay: recusa reuso do mesmo passo
+  totpCodigosBackupHash String[]  @default([])
+
+  ultimoLoginEm    DateTime?
+  tentativasFalhas Int       @default(0)
+  bloqueadoAte     DateTime?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  inscricoesOab InscricaoOab[]
+  sessoes       Sessao[]
+  auditorias    Auditoria[]
+
+  processosResponsavel Processo[]             @relation("ProcessoAdvogadoResponsavel")
+  anotacoes            AnotacaoPrivilegiada[]
+  atendimentos         Atendimento[]
+
+  prazosResponsavel Prazo[]          @relation("PrazoResponsavel")
+  prazosConfirmados Prazo[]          @relation("PrazoConfirmadoPor")
+  prazosEscalonados Prazo[]          @relation("PrazoEscalonadoPara")
+  prazosCumpridos   Prazo[]          @relation("PrazoCumpridoPor")
+  prazosCancelados  Prazo[]          @relation("PrazoCanceladoPor")
+  tratativasPrazo   TratativaPrazo[]
+  alertasRecebidos  AlertaPrazo[]
+
+  publicacoesTriadas    Publicacao[]         @relation("PublicacaoTriadaPor")
+  capturasConfirmadas   CapturaDiaria[]      @relation("CapturaConfirmadaPor")
+  checklistsResponsavel ChecklistDomicilio[] @relation("ChecklistResponsavel")
+  checklistsConfirmados ChecklistDomicilio[] @relation("ChecklistConfirmadoPor")
+
+  calendariosCriados   CalendarioTribunal[]     @relation("CalendarioCriadoPor")
+  calendariosRevisados CalendarioTribunal[]     @relation("CalendarioRevisadoPor")
+  revisoesConcluidas   RevisaoAnualCalendario[]
+
+  compromissos        Compromisso[]
+  documentosEnviados  Documento[]
+  templatesCriados    TemplateMensagem[]
+  mensagensEnviadas   EnvioMensagem[]
+  acessosDadoSensivel AcessoDadoSensivel[]
+  leadsAtribuidos     Lead[]               @relation("LeadResponsavel")
+
+  @@index([perfil, ativo])
+  @@index([unidade])
+  @@map("usuario")
+}
+
+/// Inscricoes na OAB. Cada advogado pode ter inscricao principal e suplementares
+/// (GO, PI, MA). A captura do DJEN e feita POR INSCRICAO, nao por usuario.
+model InscricaoOab {
+  id         String  @id @default(uuid()) @db.Uuid
+  usuarioId  String  @db.Uuid
+  usuario    Usuario @relation(fields: [usuarioId], references: [id])
+  numero     String
+  uf         String  @db.Char(2)
+  principal  Boolean @default(false)
+  ativa      Boolean @default(true)
+  /// Ativa a busca diaria no DJEN para esta inscricao.
+  monitorada Boolean @default(true)
+
+  criadoEm DateTime @default(now())
+
+  publicacoes Publicacao[]
+  capturas    CapturaDiaria[]
+
+  @@unique([numero, uf])
+  @@index([monitorada, ativa])
+  @@map("inscricao_oab")
+}
+
+/// Sessoes curtas com revogacao explicita. O JWT sozinho nao permite revogar
+/// acesso de usuario desligado antes da expiracao — por isso a sessao e
+/// materializada e conferida a cada requisicao sensivel.
+model Sessao {
+  id          String    @id @default(uuid()) @db.Uuid
+  usuarioId   String    @db.Uuid
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id])
+  tokenHash   String    @unique
+  criadaEm    DateTime  @default(now())
+  expiraEm    DateTime
+  ultimoUsoEm DateTime  @default(now())
+  revogadaEm  DateTime?
+  ip          String?
+  userAgent   String?
+
+  @@index([usuarioId, revogadaEm])
+  @@index([expiraEm])
+  @@map("sessao")
+}
+
+// =============================================================================
+// 2. AUDITORIA — append-only
+// -----------------------------------------------------------------------------
+// A imutabilidade NAO e garantida pelo Prisma (que aceitaria update/delete).
+// A migration acompanhante cria trigger que rejeita UPDATE e DELETE e revoga
+// esses privilegios do role da aplicacao. Ver:
+//   prisma/migrations/*_auditoria_append_only/migration.sql
+// Nao existe campo `atualizadoEm` aqui de proposito.
+// =============================================================================
+
+enum AcaoAuditoria {
+  LOGIN
+  LOGIN_FALHO
+  LOGOUT
+  LEITURA
+  ACESSO_DADO_SENSIVEL
+  CRIACAO
+  ALTERACAO
+  INATIVACAO
+  EXPORTACAO
+  CONFIRMACAO_PRAZO
+  CANCELAMENTO_PRAZO
+  TRIAGEM_PUBLICACAO
+  ENVIO_MENSAGEM
+  ALTERACAO_PERMISSAO
+}
+
+model Auditoria {
+  id              BigInt        @id @default(autoincrement())
+  ocorridoEm      DateTime      @default(now())
+  usuarioId       String?       @db.Uuid
+  usuario         Usuario?      @relation(fields: [usuarioId], references: [id])
+  /// Desnormalizado: o log precisa continuar legivel mesmo que o cadastro mude.
+  usuarioEmail    String
+  acao            AcaoAuditoria
+  entidade        String
+  entidadeId      String?
+  /// Resumo textual. NUNCA conter dado pessoal de cliente (regra testada).
+  descricao       String
+  /// Nomes dos campos alterados — apenas as CHAVES, jamais os valores.
+  camposAlterados String[]      @default([])
+  sucesso         Boolean       @default(true)
+  ip              String?
+  userAgent       String?
+
+  @@index([ocorridoEm])
+  @@index([usuarioId, ocorridoEm])
+  @@index([entidade, entidadeId])
+  @@index([acao, ocorridoEm])
+  @@map("auditoria")
+}
+
+// =============================================================================
+// 3. CLIENTES
+// =============================================================================
+
+enum TipoPessoa {
+  FISICA
+  JURIDICA
+}
+
+enum OrigemCliente {
+  INDICACAO
+  SIMULADOR_SITE
+  REDES_SOCIAIS
+  BALCAO
+  OUTRO
+}
+
+model Cliente {
+  id             String     @id @default(uuid()) @db.Uuid
+  tipoPessoa     TipoPessoa
+  /// Nome civil ou razao social.
+  nome           String
+  nomeSocial     String?
+  nomeFantasia   String?
+  /// Somente digitos. Digito verificador validado na aplicacao (lib/documentos).
+  cpfCnpj        String     @unique
+  rg             String?
+  orgaoExpedidor String?
+  dataNascimento DateTime?  @db.Date
+  estadoCivil    String?
+  profissao      String?
+  nacionalidade  String?    @default("brasileira")
+
+  origem        OrigemCliente
+  origemDetalhe String?
+
+  unidadeResponsavel Unidade
+  ativo              Boolean @default(true)
+  observacoes        String?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  enderecos      EnderecoCliente[]
+  contatos       ContatoCliente[]
+  dadosSensiveis DadoSensivelCliente[]
+  processos      ParteProcesso[]
+  contratos      ContratoHonorarios[]
+  atendimentos   Atendimento[]
+  documentos     Documento[]
+  mensagens      EnvioMensagem[]
+  lead           Lead?
+
+  @@index([nome])
+  @@index([unidadeResponsavel, ativo])
+  @@index([origem])
+  @@map("cliente")
+}
+
+model EnderecoCliente {
+  id          String  @id @default(uuid()) @db.Uuid
+  clienteId   String  @db.Uuid
+  cliente     Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  cep         String?
+  logradouro  String
+  numero      String?
+  complemento String?
+  bairro      String?
+  municipio   String
+  uf          String  @db.Char(2)
+  principal   Boolean @default(false)
+
+  @@index([clienteId])
+  @@map("endereco_cliente")
+}
+
+enum TipoContato {
+  TELEFONE
+  WHATSAPP
+  EMAIL
+}
+
+model ContatoCliente {
+  id              String      @id @default(uuid()) @db.Uuid
+  clienteId       String      @db.Uuid
+  cliente         Cliente     @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  tipo            TipoContato
+  valor           String
+  descricao       String?
+  principal       Boolean     @default(false)
+  /// Autorizacao do titular para receber comunicacao neste canal.
+  autorizaContato Boolean     @default(true)
+
+  @@index([clienteId])
+  @@map("contato_cliente")
+}
+
+// -----------------------------------------------------------------------------
+// 3.1 Dados sensiveis de saude — tabela APARTADA, cifrada, leitura auditada
+// Base legal: LGPD art. 11, II, "d". Usada em previdenciario e isencao de IR.
+// -----------------------------------------------------------------------------
+
+enum CategoriaDadoSensivel {
+  LAUDO_MEDICO
+  CID
+  EXAME
+  ATESTADO
+  BENEFICIO_INSS
+  PERICIA_MEDICA
+  OUTRO
+}
+
+model DadoSensivelCliente {
+  id        String                @id @default(uuid()) @db.Uuid
+  clienteId String                @db.Uuid
+  cliente   Cliente               @relation(fields: [clienteId], references: [id])
+  categoria CategoriaDadoSensivel
+
+  /// Flag explicita exigida pelo produto; o filtro de export a consulta.
+  dadoSensivel Boolean @default(true)
+
+  /// Criptografia em repouso a nivel de coluna: AES-256-GCM aplicado NA APLICACAO
+  /// (nao pgcrypto — a chave viajaria no texto da query e cairia em log do
+  /// Postgres). Layout do blob: iv(12) || tag(16) || ciphertext.
+  conteudoCifrado Bytes
+  versaoChave     Int    @default(1)
+  /// Rotulo nao sensivel apenas para listagem ("Laudo 03/2024"). Sem conteudo clinico.
+  rotulo          String
+
+  /// Registro da base legal no proprio dado, para atender pedido de titular.
+  baseLegal String @default("LGPD art. 11, II, d — exercicio regular de direitos em processo")
+
+  /// Retencao: descarte/anonimizacao apos o prazo, executado por rotina.
+  descartarApos DateTime? @db.Date
+  anonimizadoEm DateTime?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  acessos AcessoDadoSensivel[]
+
+  @@index([clienteId])
+  @@index([descartarApos])
+  @@map("dado_sensivel_cliente")
+}
+
+/// Exigencia do produto: acesso a dado sensivel e logado INDIVIDUALMENTE.
+/// Alem do log geral de auditoria, este registro permite responder
+/// "quem leu o laudo do cliente X" sem varrer a auditoria inteira.
+model AcessoDadoSensivel {
+  id         String              @id @default(uuid()) @db.Uuid
+  dadoId     String              @db.Uuid
+  dado       DadoSensivelCliente @relation(fields: [dadoId], references: [id])
+  usuarioId  String              @db.Uuid
+  usuario    Usuario             @relation(fields: [usuarioId], references: [id])
+  ocorridoEm DateTime            @default(now())
+  finalidade String?
+  ip         String?
+
+  @@index([dadoId, ocorridoEm])
+  @@index([usuarioId, ocorridoEm])
+  @@map("acesso_dado_sensivel")
+}
+
+// =============================================================================
+// 4. TRIBUNAIS, ORGAOS E CALENDARIOS
+// -----------------------------------------------------------------------------
+// Feriado municipal segue o MUNICIPIO DO ORGAO JULGADOR, nao a sede do tribunal:
+// um processo do TRT-18 em Anapolis nao para no feriado de Goiania. Por isso
+// `OrgaoJulgador` carrega municipio/uf e o motor resolve por ele.
+// =============================================================================
+
+enum RamoJustica {
+  TRABALHISTA
+  FEDERAL
+  ESTADUAL
+  SUPERIOR
+}
+
+enum RegimeContagem {
+  /// CLT art. 775 (redacao da Lei 13.467/2017) — dias uteis.
+  DIAS_UTEIS_TRABALHISTA
+  /// CPC art. 219 — dias uteis, apenas prazos processuais.
+  DIAS_UTEIS_CPC
+  /// Prazos materiais/decadenciais e sede administrativa (INSS).
+  DIAS_CORRIDOS
+}
+
+model Tribunal {
+  id                   String         @id @default(uuid()) @db.Uuid
+  /// Codigo estavel usado em seeds e integracoes. Ex.: "TRT18", "TJGO", "TRF1".
+  codigo               String         @unique
+  nome                 String
+  sigla                String
+  ramo                 RamoJustica
+  uf                   String?        @db.Char(2)
+  regimeContagemPadrao RegimeContagem
+  /// Recesso forense de 20/12 a 20/01 (CLT 775-A / CPC 220). Falso para
+  /// orgaos administrativos que nao observam recesso.
+  observaRecesso       Boolean        @default(true)
+
+  orgaos      OrgaoJulgador[]
+  calendarios CalendarioTribunal[]
+  revisoes    RevisaoAnualCalendario[]
+  processos   Processo[]
+  prazos      Prazo[]
+
+  @@map("tribunal")
+}
+
+model OrgaoJulgador {
+  id         String   @id @default(uuid()) @db.Uuid
+  tribunalId String   @db.Uuid
+  tribunal   Tribunal @relation(fields: [tribunalId], references: [id])
+  nome       String
+  /// Determina quais feriados municipais se aplicam ao processo.
+  municipio  String
+  uf         String   @db.Char(2)
+
+  processos    Processo[]
+  diasNaoUteis DiaNaoUtilTribunal[]
+
+  @@unique([tribunalId, nome])
+  @@index([municipio, uf])
+  @@map("orgao_julgador")
+}
+
+enum AbrangenciaFeriado {
+  NACIONAL
+  ESTADUAL
+  MUNICIPAL
+}
+
+/// Feriados civis. Compostos pelo motor com o calendario do tribunal.
+model FeriadoGeral {
+  id                 String             @id @default(uuid()) @db.Uuid
+  data               DateTime           @db.Date
+  nome               String
+  abrangencia        AbrangenciaFeriado
+  uf                 String?            @db.Char(2)
+  municipio          String?
+  /// Ponto facultativo nao suspende expediente por si so: depende de ato do
+  /// tribunal. Por isso a decisao e um booleano explicito, e nao inferida do tipo.
+  suspendeExpediente Boolean            @default(true)
+  fonte              String?
+
+  criadoEm DateTime @default(now())
+
+  @@unique([data, abrangencia, uf, municipio])
+  @@index([data])
+  @@map("feriado_geral")
+}
+
+enum StatusCalendario {
+  RASCUNHO
+  VIGENTE
+  SUBSTITUIDO
+}
+
+/// Calendario por tribunal, VERSIONADO. Nunca se edita um calendario vigente:
+/// cria-se nova versao. Um prazo ja calculado guarda a versao usada, para que o
+/// recalculo futuro nao apague o raciocinio original.
+model CalendarioTribunal {
+  id           String           @id @default(uuid()) @db.Uuid
+  tribunalId   String           @db.Uuid
+  tribunal     Tribunal         @relation(fields: [tribunalId], references: [id])
+  ano          Int
+  versao       Int              @default(1)
+  status       StatusCalendario @default(RASCUNHO)
+  vigenteDesde DateTime?
+  observacao   String?
+
+  criadoPorId String   @db.Uuid
+  criadoPor   Usuario  @relation("CalendarioCriadoPor", fields: [criadoPorId], references: [id])
+  criadoEm    DateTime @default(now())
+
+  revisadoPorId String?   @db.Uuid
+  revisadoPor   Usuario?  @relation("CalendarioRevisadoPor", fields: [revisadoPorId], references: [id])
+  revisadoEm    DateTime?
+
+  dias   DiaNaoUtilTribunal[]
+  prazos Prazo[]
+
+  @@unique([tribunalId, ano, versao])
+  @@index([tribunalId, ano, status])
+  @@map("calendario_tribunal")
+}
+
+enum TipoDiaNaoUtil {
+  FERIADO_FORENSE
+  SUSPENSAO_EXPEDIENTE
+  PONTO_FACULTATIVO
+  RECESSO_FORENSE
+  SUSPENSAO_PRAZOS
+}
+
+/// Suspensoes de expediente por portaria — a maior fonte de erro real de prazo.
+model DiaNaoUtilTribunal {
+  id                 String             @id @default(uuid()) @db.Uuid
+  calendarioId       String             @db.Uuid
+  calendario         CalendarioTribunal @relation(fields: [calendarioId], references: [id], onDelete: Cascade)
+  data               DateTime           @db.Date
+  tipo               TipoDiaNaoUtil
+  descricao          String
+  /// Decisao explicita — ponto facultativo pode ou nao suspender expediente.
+  suspendeExpediente Boolean            @default(true)
+  /// Portarias frequentemente atingem apenas uma vara/comarca.
+  /// Nulo = todo o tribunal.
+  orgaoJulgadorId    String?            @db.Uuid
+  orgaoJulgador      OrgaoJulgador?     @relation(fields: [orgaoJulgadorId], references: [id])
+
+  /// Origem obrigatoria: "Portaria Conjunta 3/2025 — TRT-18". Sem fonte, o dado
+  /// nao e defensavel perante o cliente nem perante o juizo.
+  fonte    String
+  urlFonte String?
+
+  criadoEm DateTime @default(now())
+
+  @@index([calendarioId, data])
+  @@index([data])
+  @@map("dia_nao_util_tribunal")
+}
+
+enum StatusRevisao {
+  PENDENTE
+  EM_ANDAMENTO
+  CONCLUIDA
+}
+
+/// Rotina anual obrigatoria de revisao de calendario, com alerta em dezembro.
+model RevisaoAnualCalendario {
+  id                String        @id @default(uuid()) @db.Uuid
+  tribunalId        String        @db.Uuid
+  tribunal          Tribunal      @relation(fields: [tribunalId], references: [id])
+  ano               Int
+  status            StatusRevisao @default(PENDENTE)
+  alertaDisparadoEm DateTime?
+  concluidoPorId    String?       @db.Uuid
+  concluidoPor      Usuario?      @relation(fields: [concluidoPorId], references: [id])
+  concluidoEm       DateTime?
+  observacao        String?
+
+  @@unique([tribunalId, ano])
+  @@index([status, ano])
+  @@map("revisao_anual_calendario")
+}
+
+// =============================================================================
+// 5. PROCESSOS
+// =============================================================================
+
+enum GrauJurisdicao {
+  PRIMEIRO
+  SEGUNDO
+  SUPERIOR
+  EXTRAORDINARIO
+}
+
+enum PoloProcessual {
+  ATIVO
+  PASSIVO
+  TERCEIRO_INTERESSADO
+}
+
+enum SituacaoProcesso {
+  EM_ANDAMENTO
+  SUSPENSO
+  ARQUIVADO
+  BAIXADO
+  EXTINTO
+  TRANSITADO_JULGADO
+  EM_EXECUCAO
+}
+
+model Processo {
+  id String @id @default(uuid()) @db.Uuid
+
+  /// Formatado NNNNNNN-DD.AAAA.J.TR.OOOO (exibicao).
+  numeroCnj        String @unique
+  /// Somente digitos — chave de casamento com publicacoes do DJEN.
+  numeroCnjDigitos String @unique
+  // Campos derivados do parser CNJ (Res. CNJ 65/2008), persistidos para busca:
+  cnjSequencial    String
+  cnjDigito        String @db.Char(2)
+  cnjAno           Int
+  cnjSegmento      String @db.Char(1)
+  cnjTribunal      String @db.Char(2)
+  cnjOrigem        String
+
+  tribunalId      String         @db.Uuid
+  tribunal        Tribunal       @relation(fields: [tribunalId], references: [id])
+  orgaoJulgadorId String?        @db.Uuid
+  orgaoJulgador   OrgaoJulgador? @relation(fields: [orgaoJulgadorId], references: [id])
+
+  grau             GrauJurisdicao
+  classeProcessual String?
+  assunto          String?
+  valorCausa       Decimal?         @db.Decimal(14, 2)
+  poloCliente      PoloProcessual
+  situacao         SituacaoProcesso @default(EM_ANDAMENTO)
+  dataDistribuicao DateTime?        @db.Date
+  segredoJustica   Boolean          @default(false)
+  /// Sobrepoe o padrao do tribunal quando o rito exige (ex.: prazo material).
+  regimeContagem   RegimeContagem?
+
+  advogadoResponsavelId String  @db.Uuid
+  advogadoResponsavel   Usuario @relation("ProcessoAdvogadoResponsavel", fields: [advogadoResponsavelId], references: [id])
+  unidade               Unidade
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  partes        ParteProcesso[]
+  movimentacoes Movimentacao[]
+  anotacoes     AnotacaoPrivilegiada[]
+  prazos        Prazo[]
+  publicacoes   Publicacao[]
+  compromissos  Compromisso[]
+  documentos    Documento[]
+  atendimentos  Atendimento[]
+  contratos     ContratoProcesso[]
+  lancamentos   LancamentoHonorarios[]
+
+  @@index([advogadoResponsavelId, situacao])
+  @@index([unidade, situacao])
+  @@index([tribunalId])
+  @@map("processo")
+}
+
+enum TipoParte {
+  CLIENTE
+  PARTE_CONTRARIA
+  TERCEIRO
+}
+
+model ParteProcesso {
+  id              String         @id @default(uuid()) @db.Uuid
+  processoId      String         @db.Uuid
+  processo        Processo       @relation(fields: [processoId], references: [id], onDelete: Cascade)
+  tipo            TipoParte
+  polo            PoloProcessual
+  /// Preenchido quando a parte e cliente do escritorio.
+  clienteId       String?        @db.Uuid
+  cliente         Cliente?       @relation(fields: [clienteId], references: [id])
+  /// Usado para partes que nao sao clientes (parte contraria, terceiros).
+  nome            String
+  cpfCnpj         String?
+  advogadoAdverso String?
+  oabAdverso      String?
+
+  @@index([processoId])
+  @@index([clienteId])
+  @@map("parte_processo")
+}
+
+enum OrigemMovimentacao {
+  MANUAL
+  PUBLICACAO
+  DATAJUD
+}
+
+model Movimentacao {
+  id           String             @id @default(uuid()) @db.Uuid
+  processoId   String             @db.Uuid
+  processo     Processo           @relation(fields: [processoId], references: [id], onDelete: Cascade)
+  data         DateTime           @db.Date
+  descricao    String
+  origem       OrigemMovimentacao
+  publicacaoId String?            @db.Uuid
+  publicacao   Publicacao?        @relation(fields: [publicacaoId], references: [id])
+  /// Payload da fonte externa preservado para reconstituicao.
+  payloadBruto Json?
+
+  criadoEm DateTime @default(now())
+
+  @@index([processoId, data])
+  @@map("movimentacao")
+}
+
+/// Estrategia e anotacoes internas. PRIVILEGIADO: excluido por construcao de
+/// qualquer export destinado ao cliente (regra coberta por teste automatizado).
+model AnotacaoPrivilegiada {
+  id           String   @id @default(uuid()) @db.Uuid
+  processoId   String   @db.Uuid
+  processo     Processo @relation(fields: [processoId], references: [id], onDelete: Cascade)
+  autorId      String   @db.Uuid
+  autor        Usuario  @relation(fields: [autorId], references: [id])
+  conteudo     String
+  privilegiado Boolean  @default(true)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([processoId])
+  @@map("anotacao_privilegiada")
+}
+
+// =============================================================================
+// 6. PRAZOS — modulo critico
+// -----------------------------------------------------------------------------
+// Invariantes garantidas no banco (ver migration _prazo_invariantes):
+//   (a) origem = CAPTURA_AUTOMATICA e status = PENDENTE_CONFERENCIA
+//       enquanto confirmadoPorId for NULL;
+//   (b) status CONFIRMADO exige confirmadoPorId e confirmadoEm;
+//   (c) cancelamento exige justificativa;
+//   (d) DELETE bloqueado por trigger — prazo nao se apaga, se cancela com motivo.
+// A confirmacao so pode ser feita por SOCIO ou ADVOGADO (checado na aplicacao,
+// pois depende de outra tabela; coberto por teste).
+// =============================================================================
+
+enum OrigemPrazo {
+  CAPTURA_AUTOMATICA
+  MANUAL
+  IMPORTACAO
+}
+
+enum StatusPrazo {
+  /// Estado inicial obrigatorio de todo prazo de origem automatica.
+  PENDENTE_CONFERENCIA
+  CONFIRMADO
+  EM_TRATATIVA
+  CUMPRIDO
+  PERDIDO
+  PREJUDICADO
+  CANCELADO
+}
+
+model Prazo {
+  id         String   @id @default(uuid()) @db.Uuid
+  processoId String   @db.Uuid
+  processo   Processo @relation(fields: [processoId], references: [id])
+
+  titulo       String
+  descricaoAto String?
+  origem       OrigemPrazo
+  status       StatusPrazo @default(PENDENTE_CONFERENCIA)
+
+  publicacaoId String?     @db.Uuid
+  publicacao   Publicacao? @relation(fields: [publicacaoId], references: [id])
+
+  // --- INSUMOS DO CALCULO (sempre exibidos junto da data) ---------------------
+  /// Data de disponibilizacao no diario eletronico.
+  dataDisponibilizacao      DateTime?      @db.Date
+  /// Publicacao = 1o dia util seguinte a disponibilizacao (Lei 11.419/2006, 4o, 3o).
+  dataPublicacaoConsiderada DateTime       @db.Date
+  /// Contagem inicia no 1o dia util seguinte a publicacao (4o, 4o).
+  dataInicioContagem        DateTime       @db.Date
+  prazoDias                 Int
+  regimeContagem            RegimeContagem
+  tribunalId                String         @db.Uuid
+  tribunal                  Tribunal       @relation(fields: [tribunalId], references: [id])
+  /// Prazo em dobro: Fazenda Publica (CPC 183), Defensoria (CPC 186),
+  /// litisconsortes com procuradores distintos em autos fisicos (CPC 229).
+  prazoEmDobro              Boolean        @default(false)
+  fundamentoDobro           String?
+
+  // --- RESULTADO DO CALCULO ---------------------------------------------------
+  dataFatal         DateTime            @db.Date
+  diasUteisContados Int
+  /// Lista de feriados aplicados com data, nome, origem e fonte legal.
+  feriadosAplicados Json
+  fundamentoLegal   String
+  /// Premissas assumidas pelo motor, exibidas ao advogado na conferencia.
+  premissas         Json
+  calculadoEm       DateTime            @default(now())
+  /// Versao do motor e do calendario que produziram a data. Sem isso, um
+  /// recalculo futuro apagaria o raciocinio que fundamentou a decisao.
+  versaoMotor       String
+  calendarioId      String?             @db.Uuid
+  calendario        CalendarioTribunal? @relation(fields: [calendarioId], references: [id])
+
+  // --- RESPONSABILIDADE E CICLO DE VIDA ---------------------------------------
+  responsavelId String  @db.Uuid
+  responsavel   Usuario @relation("PrazoResponsavel", fields: [responsavelId], references: [id])
+
+  confirmadoPorId String?   @db.Uuid
+  confirmadoPor   Usuario?  @relation("PrazoConfirmadoPor", fields: [confirmadoPorId], references: [id])
+  confirmadoEm    DateTime?
+
+  primeiraTratativaEm DateTime?
+  escalonadoParaId    String?   @db.Uuid
+  escalonadoPara      Usuario?  @relation("PrazoEscalonadoPara", fields: [escalonadoParaId], references: [id])
+  escalonadoEm        DateTime?
+
+  cumpridoPorId String?   @db.Uuid
+  cumpridoPor   Usuario?  @relation("PrazoCumpridoPor", fields: [cumpridoPorId], references: [id])
+  cumpridoEm    DateTime?
+
+  canceladoPorId            String?   @db.Uuid
+  canceladoPor              Usuario?  @relation("PrazoCanceladoPor", fields: [canceladoPorId], references: [id])
+  canceladoEm               DateTime?
+  justificativaCancelamento String?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  tratativas TratativaPrazo[]
+  alertas    AlertaPrazo[]
+
+  @@index([status, dataFatal])
+  @@index([responsavelId, status, dataFatal])
+  @@index([processoId])
+  @@index([dataFatal])
+  @@map("prazo")
+}
+
+/// Registro de tratativa. A ausencia de tratativa a partir de D-3 dispara
+/// escalonamento para o socio responsavel.
+model TratativaPrazo {
+  id        String   @id @default(uuid()) @db.Uuid
+  prazoId   String   @db.Uuid
+  prazo     Prazo    @relation(fields: [prazoId], references: [id])
+  usuarioId String   @db.Uuid
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  descricao String
+  criadoEm  DateTime @default(now())
+
+  @@index([prazoId, criadoEm])
+  @@map("tratativa_prazo")
+}
+
+enum MarcoAlerta {
+  D_10
+  D_5
+  D_3
+  D_2
+  D_1
+  D_0
+}
+
+enum CanalAlerta {
+  PAINEL
+  EMAIL
+}
+
+model AlertaPrazo {
+  id             String      @id @default(uuid()) @db.Uuid
+  prazoId        String      @db.Uuid
+  prazo          Prazo       @relation(fields: [prazoId], references: [id], onDelete: Cascade)
+  marco          MarcoAlerta
+  canal          CanalAlerta
+  destinatarioId String      @db.Uuid
+  destinatario   Usuario     @relation(fields: [destinatarioId], references: [id])
+  /// Verdadeiro quando o alerta decorre de escalonamento por falta de tratativa.
+  escalonamento  Boolean     @default(false)
+  enviadoEm      DateTime?
+  lidoEm         DateTime?
+  erro           String?
+
+  criadoEm DateTime @default(now())
+
+  /// Idempotencia do cron: reexecucao no mesmo dia nao duplica alerta.
+  @@unique([prazoId, marco, canal, destinatarioId])
+  @@index([destinatarioId, lidoEm])
+  @@map("alerta_prazo")
+}
+
+// =============================================================================
+// 7. CAPTURA DE PUBLICACOES
+// -----------------------------------------------------------------------------
+// Publicacao NUNCA e descartada silenciosamente: sem casamento de CNJ ela vai
+// para a fila de triagem como ORFA. Homonimo (nome bate, OAB nao) vira SUSPEITA.
+// =============================================================================
+
+enum FontePublicacao {
+  DJEN
+  DEJT
+  DOMICILIO_JUDICIAL
+  MANUAL
+}
+
+enum StatusPublicacao {
+  PENDENTE_TRIAGEM
+  VINCULADA
+  ORFA
+  SUSPEITA_HOMONIMO
+  DESCARTADA
+}
+
+model Publicacao {
+  id    String          @id @default(uuid()) @db.Uuid
+  fonte FontePublicacao
+
+  /// Deduplicacao: SHA-256 do teor normalizado.
+  hashConteudo          String
+  numeroProcessoDigitos String?
+  dataDisponibilizacao  DateTime  @db.Date
+  dataPublicacao        DateTime? @db.Date
+
+  teor         String
+  /// Payload bruto da fonte (JSONB). Obrigatorio: permite reconstituir a
+  /// qualquer momento o que a fonte efetivamente disse.
+  payloadBruto Json
+  urlCertidao  String?
+
+  inscricaoOabId     String?       @db.Uuid
+  inscricaoOab       InscricaoOab? @relation(fields: [inscricaoOabId], references: [id])
+  /// Nome do advogado como veio da fonte — base da deteccao de homonimo.
+  nomeAdvogadoCitado String?
+  suspeitaHomonimo   Boolean       @default(false)
+
+  processoId String?   @db.Uuid
+  processo   Processo? @relation(fields: [processoId], references: [id])
+
+  status                StatusPublicacao @default(PENDENTE_TRIAGEM)
+  triadaPorId           String?          @db.Uuid
+  triadaPor             Usuario?         @relation("PublicacaoTriadaPor", fields: [triadaPorId], references: [id])
+  triadaEm              DateTime?
+  /// Descarte exige motivo. O registro permanece.
+  justificativaDescarte String?
+
+  capturaId String?        @db.Uuid
+  captura   CapturaDiaria? @relation(fields: [capturaId], references: [id])
+
+  criadoEm DateTime @default(now())
+
+  prazos        Prazo[]
+  movimentacoes Movimentacao[]
+
+  /// Chave de deduplicacao definida no produto.
+  @@unique([hashConteudo, numeroProcessoDigitos, dataDisponibilizacao])
+  @@index([status, dataDisponibilizacao])
+  @@index([numeroProcessoDigitos])
+  @@index([processoId])
+  @@map("publicacao")
+}
+
+enum StatusCaptura {
+  /// Linha criada ANTES da execucao. Se permanecer assim, o job nao rodou.
+  PENDENTE
+  EM_EXECUCAO
+  CONCLUIDA
+  /// Resposta valida e vazia. Tambem exige confirmacao humana — "nao houve
+  /// publicacao" e uma afirmacao, nao um silencio.
+  CONCLUIDA_SEM_PUBLICACOES
+  FALHA
+}
+
+/// Batimento diario da captura. O painel fica VERMELHO quando a linha do dia
+/// nao existe ou nao esta concluida — e assim o dia em que o cron simplesmente
+/// nao executou fica visivel, o que um mero log de erro nunca detectaria.
+model CapturaDiaria {
+  id             String          @id @default(uuid()) @db.Uuid
+  data           DateTime        @db.Date
+  fonte          FontePublicacao
+  inscricaoOabId String          @db.Uuid
+  inscricaoOab   InscricaoOab    @relation(fields: [inscricaoOabId], references: [id])
+
+  status           StatusCaptura @default(PENDENTE)
+  iniciadaEm       DateTime?
+  concluidaEm      DateTime?
+  quantidadeObtida Int?
+  tentativas       Int           @default(0)
+  /// Mensagem tecnica da falha. NUNCA conter dado de cliente.
+  mensagemErro     String?
+  httpStatus       Int?
+
+  /// Confirmacao humana exigida para CONCLUIDA_SEM_PUBLICACOES.
+  confirmadaPorId String?   @db.Uuid
+  confirmadaPor   Usuario?  @relation("CapturaConfirmadaPor", fields: [confirmadaPorId], references: [id])
+  confirmadaEm    DateTime?
+
+  criadoEm DateTime @default(now())
+
+  publicacoes Publicacao[]
+
+  @@unique([data, fonte, inscricaoOabId])
+  @@index([data, status])
+  @@map("captura_diaria")
+}
+
+/// Domicilio Judicial Eletronico — LACUNA ASSUMIDA.
+/// Citacoes e intimacoes com exigencia de pessoalidade correm por ali e NAO
+/// aparecem no DJEN. Nao ha integracao: este e um controle humano diario, e a
+/// funcao do sistema e tornar sua AUSENCIA visivel.
+model ChecklistDomicilio {
+  id      String   @id @default(uuid()) @db.Uuid
+  data    DateTime @db.Date
+  unidade Unidade
+
+  responsavelId String  @db.Uuid
+  responsavel   Usuario @relation("ChecklistResponsavel", fields: [responsavelId], references: [id])
+
+  confirmadoPorId String?   @db.Uuid
+  confirmadoPor   Usuario?  @relation("ChecklistConfirmadoPor", fields: [confirmadoPorId], references: [id])
+  confirmadoEm    DateTime?
+
+  houveNovidade Boolean @default(false)
+  observacao    String?
+
+  criadoEm DateTime @default(now())
+
+  @@unique([data, unidade])
+  @@index([data, confirmadoEm])
+  @@map("checklist_domicilio")
+}
+
+// =============================================================================
+// 8. AGENDA
+// =============================================================================
+
+enum TipoCompromisso {
+  AUDIENCIA
+  PERICIA
+  REUNIAO
+  SUSTENTACAO_ORAL
+  DILIGENCIA
+  OUTRO
+}
+
+enum StatusCompromisso {
+  AGENDADO
+  REALIZADO
+  ADIADO
+  CANCELADO
+}
+
+model Compromisso {
+  id         String          @id @default(uuid()) @db.Uuid
+  tipo       TipoCompromisso
+  titulo     String
+  processoId String?         @db.Uuid
+  processo   Processo?       @relation(fields: [processoId], references: [id])
+
+  dataHora       DateTime
+  duracaoMinutos Int?     @default(60)
+
+  /// Deslocamento entre GO/PI/MA: alerta antecipado (D-15) quando o compromisso
+  /// ocorre fora da unidade do responsavel.
+  municipio   String
+  uf          String  @db.Char(2)
+  forum       String?
+  endereco    String?
+  virtual     Boolean @default(false)
+  linkVirtual String?
+
+  responsavelId      String  @db.Uuid
+  responsavel        Usuario @relation(fields: [responsavelId], references: [id])
+  unidadeResponsavel Unidade
+  exigeDeslocamento  Boolean @default(false)
+
+  status      StatusCompromisso @default(AGENDADO)
+  observacoes String?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([responsavelId, dataHora])
+  @@index([dataHora, status])
+  @@map("compromisso")
+}
+
+// =============================================================================
+// 9. RELACIONAMENTO COM O CLIENTE
+// -----------------------------------------------------------------------------
+// Prov. 205/2021 CFOAB: comunicacao com cliente existente sobre o proprio caso
+// e dever profissional. VEDADO: promessa de resultado, valor certo, prazo
+// garantido — validado na criacao de template, com teste automatizado.
+// =============================================================================
+
+enum CanalAtendimento {
+  PRESENCIAL
+  TELEFONE
+  WHATSAPP
+  EMAIL
+  VIDEOCHAMADA
+  OUTRO
+}
+
+model Atendimento {
+  id             String           @id @default(uuid()) @db.Uuid
+  clienteId      String           @db.Uuid
+  cliente        Cliente          @relation(fields: [clienteId], references: [id])
+  processoId     String?          @db.Uuid
+  processo       Processo?        @relation(fields: [processoId], references: [id])
+  data           DateTime
+  canal          CanalAtendimento
+  atendidoPorId  String           @db.Uuid
+  atendidoPor    Usuario          @relation(fields: [atendidoPorId], references: [id])
+  resumo         String
+  proximoPasso   String?
+  proximoPassoEm DateTime?        @db.Date
+
+  criadoEm DateTime @default(now())
+
+  @@index([clienteId, data])
+  @@index([atendidoPorId, data])
+  @@map("atendimento")
+}
+
+/// Catalogo fechado de finalidades. Ampliar exige decisao de produto — nao e
+/// campo livre justamente para impedir o uso promocional da base.
+enum CategoriaTemplate {
+  RECEBIMENTO_DOCUMENTO
+  AUDIENCIA_DESIGNADA
+  MOVIMENTACAO_PROCESSO
+  CONVITE_REUNIAO
+  COBRANCA_PARCELA
+}
+
+model TemplateMensagem {
+  id        String            @id @default(uuid()) @db.Uuid
+  codigo    String            @unique
+  titulo    String
+  canal     TipoContato
+  categoria CategoriaTemplate
+  corpo     String
+  ativo     Boolean           @default(true)
+
+  /// WhatsApp somente via API oficial do Business, com template aprovado.
+  /// Numero pessoal nao e automatizado.
+  nomeTemplateWhatsapp String?
+  aprovadoWhatsappEm   DateTime?
+
+  /// Carimbo da validacao anti-promessa (resultado / valor certo / prazo
+  /// garantido). Template sem validacao nao pode ser usado em envio.
+  validadoEm DateTime?
+
+  criadoPorId String   @db.Uuid
+  criadoPor   Usuario  @relation(fields: [criadoPorId], references: [id])
+  criadoEm    DateTime @default(now())
+
+  envios EnvioMensagem[]
+
+  @@map("template_mensagem")
+}
+
+enum StatusEnvio {
+  PENDENTE
+  ENVIADO
+  ENTREGUE
+  LIDO
+  FALHA
+}
+
+model EnvioMensagem {
+  id           String           @id @default(uuid()) @db.Uuid
+  templateId   String           @db.Uuid
+  template     TemplateMensagem @relation(fields: [templateId], references: [id])
+  clienteId    String           @db.Uuid
+  cliente      Cliente          @relation(fields: [clienteId], references: [id])
+  canal        TipoContato
+  destinatario String
+  variaveis    Json
+  status       StatusEnvio      @default(PENDENTE)
+  enviadoEm    DateTime?
+  erro         String?
+  /// Envio e sempre ato de um usuario identificado. Nao ha disparo em massa.
+  enviadoPorId String           @db.Uuid
+  enviadoPor   Usuario          @relation(fields: [enviadoPorId], references: [id])
+
+  criadoEm DateTime @default(now())
+
+  @@index([clienteId, criadoEm])
+  @@map("envio_mensagem")
+}
+
+// -----------------------------------------------------------------------------
+// 9.1 Leads dos simuladores — Prov. 205/2021
+// NAO existe disparo proativo automatico. O lead so entra na fila de contato
+// humano se `solicitouContato = true`, com consentimento datado e origem
+// registrada. Base legal: LGPD art. 7, I (consentimento).
+// -----------------------------------------------------------------------------
+
+enum OrigemSimulador {
+  PRECATORIO_RPV
+  VERBAS_RESCISORIAS
+  OUTRO
+}
+
+enum StatusLead {
+  AGUARDANDO_CONTATO
+  EM_CONTATO
+  CONVERTIDO
+  DESCARTADO
+  SEM_CONSENTIMENTO
+}
+
+model Lead {
+  id        String          @id @default(uuid()) @db.Uuid
+  simulador OrigemSimulador
+  nome      String
+  whatsapp  String
+  email     String?
+  /// Resultado do simulador como enviado pelo site.
+  payload   Json
+
+  /// Consentimento inequivoco do titular, com data e origem — exigencia do
+  /// Prov. 205 e da LGPD. Sem isso o lead nao pode ser contatado.
+  solicitouContato Boolean   @default(false)
+  consentimentoEm  DateTime?
+  origemUtm        Json?
+
+  status        StatusLead @default(AGUARDANDO_CONTATO)
+  responsavelId String?    @db.Uuid
+  responsavel   Usuario?   @relation("LeadResponsavel", fields: [responsavelId], references: [id])
+
+  clienteConvertidoId String?  @unique @db.Uuid
+  clienteConvertido   Cliente? @relation(fields: [clienteConvertidoId], references: [id])
+
+  /// Retencao: lead sem conversao e descartado apos o prazo definido.
+  descartarApos DateTime? @db.Date
+
+  criadoEm DateTime @default(now())
+
+  @@index([status, criadoEm])
+  @@index([solicitouContato])
+  @@map("lead")
+}
+
+// =============================================================================
+// 10. HONORARIOS E FINANCEIRO
+// -----------------------------------------------------------------------------
+// Sucumbencia (EAOAB art. 23) e contratual destacado (EAOAB art. 22, 4o) sao
+// naturezas DISTINTAS e nao podem ser somadas cegamente em relatorio.
+// Provisao de exito NUNCA e receita realizada.
+// =============================================================================
+
+enum ModalidadeHonorarios {
+  FIXO
+  EXITO
+  MISTO
+  PRO_LABORE_MAIS_EXITO
+  CONSULTIVO_MENSAL
+}
+
+model ContratoHonorarios {
+  id         String               @id @default(uuid()) @db.Uuid
+  clienteId  String               @db.Uuid
+  cliente    Cliente              @relation(fields: [clienteId], references: [id])
+  modalidade ModalidadeHonorarios
+
+  valorFixo       Decimal? @db.Decimal(14, 2)
+  percentualExito Decimal? @db.Decimal(5, 2)
+  valorProLabore  Decimal? @db.Decimal(14, 2)
+  valorMensal     Decimal? @db.Decimal(14, 2)
+
+  objeto         String
+  dataAssinatura DateTime  @db.Date
+  vigenciaInicio DateTime  @db.Date
+  vigenciaFim    DateTime? @db.Date
+  unidade        Unidade
+  ativo          Boolean   @default(true)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  processos   ContratoProcesso[]
+  parcelas    Parcela[]
+  lancamentos LancamentoHonorarios[]
+
+  @@index([clienteId, ativo])
+  @@map("contrato_honorarios")
+}
+
+model ContratoProcesso {
+  contratoId String             @db.Uuid
+  contrato   ContratoHonorarios @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  processoId String             @db.Uuid
+  processo   Processo           @relation(fields: [processoId], references: [id], onDelete: Cascade)
+
+  @@id([contratoId, processoId])
+  @@map("contrato_processo")
+}
+
+enum StatusParcela {
+  A_VENCER
+  PAGO
+  EM_ATRASO
+  RENEGOCIADO
+  CANCELADO
+}
+
+enum FormaPagamento {
+  PIX
+  TRANSFERENCIA
+  BOLETO
+  DINHEIRO
+  CARTAO
+  DEPOSITO_JUDICIAL
+}
+
+model Parcela {
+  id         String             @id @default(uuid()) @db.Uuid
+  contratoId String             @db.Uuid
+  contrato   ContratoHonorarios @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  numero     Int
+  valor      Decimal            @db.Decimal(14, 2)
+  vencimento DateTime           @db.Date
+  status     StatusParcela      @default(A_VENCER)
+
+  pagoEm         DateTime?       @db.Date
+  valorPago      Decimal?        @db.Decimal(14, 2)
+  formaPagamento FormaPagamento?
+  comprovanteId  String?         @db.Uuid
+  comprovante    Documento?      @relation("ComprovanteParcela", fields: [comprovanteId], references: [id])
+
+  observacao String?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@unique([contratoId, numero])
+  @@index([status, vencimento])
+  @@map("parcela")
+}
+
+enum NaturezaHonorarios {
+  /// Devidos pelo cliente por forca do contrato.
+  CONTRATUAL
+  /// Devidos pela parte vencida ao advogado (EAOAB art. 23).
+  SUCUMBENCIA
+  /// Destaque na execucao (EAOAB art. 22, 4o).
+  CONTRATUAL_DESTACADO
+}
+
+model LancamentoHonorarios {
+  id         String              @id @default(uuid()) @db.Uuid
+  natureza   NaturezaHonorarios
+  contratoId String?             @db.Uuid
+  contrato   ContratoHonorarios? @relation(fields: [contratoId], references: [id])
+  processoId String?             @db.Uuid
+  processo   Processo?           @relation(fields: [processoId], references: [id])
+
+  valor              Decimal  @db.Decimal(14, 2)
+  dataReconhecimento DateTime @db.Date
+
+  /// Provisao de exito: valor ESPERADO. Jamais entra como receita realizada
+  /// em relatorio (regra coberta por teste).
+  provisao   Boolean   @default(false)
+  recebido   Boolean   @default(false)
+  recebidoEm DateTime? @db.Date
+
+  unidade   Unidade
+  descricao String?
+
+  criadoEm DateTime @default(now())
+
+  @@index([natureza, dataReconhecimento])
+  @@index([unidade, recebido])
+  @@map("lancamento_honorarios")
+}
+
+// =============================================================================
+// 11. DOCUMENTOS
+// -----------------------------------------------------------------------------
+// Arquivo nunca e servido direto do bucket: sempre por URL assinada de curta
+// duracao, apos checagem de RBAC. Upload passa por validacao de tipo e antivirus.
+// =============================================================================
+
+enum StatusAntivirus {
+  PENDENTE
+  LIMPO
+  INFECTADO
+  ERRO
+}
+
+model Documento {
+  id         String    @id @default(uuid()) @db.Uuid
+  clienteId  String?   @db.Uuid
+  cliente    Cliente?  @relation(fields: [clienteId], references: [id])
+  processoId String?   @db.Uuid
+  processo   Processo? @relation(fields: [processoId], references: [id])
+
+  nome         String
+  tipoMime     String
+  tamanho      Int
+  /// Caminho no bucket. Acesso somente via URL assinada de curta duracao.
+  chaveStorage String @unique
+  hashSha256   String
+
+  versao         Int         @default(1)
+  documentoPaiId String?     @db.Uuid
+  documentoPai   Documento?  @relation("VersaoDocumento", fields: [documentoPaiId], references: [id])
+  versoes        Documento[] @relation("VersaoDocumento")
+
+  /// Documento sensivel (laudo, exame): invisivel para FINANCEIRO e ESTAGIARIO.
+  sensivel     Boolean @default(false)
+  /// Excluido de export destinado ao cliente.
+  privilegiado Boolean @default(false)
+
+  antivirusStatus       StatusAntivirus @default(PENDENTE)
+  antivirusVerificadoEm DateTime?
+
+  enviadoPorId String  @db.Uuid
+  enviadoPor   Usuario @relation(fields: [enviadoPorId], references: [id])
+
+  criadoEm DateTime @default(now())
+
+  comprovanteDe Parcela[] @relation("ComprovanteParcela")
+
+  @@index([processoId])
+  @@index([clienteId])
+  @@map("documento")
+}

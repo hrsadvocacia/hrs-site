@@ -9,13 +9,26 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "test:invariantes": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f prisma/testes/invariantes.sql",
-    "migrate:deploy": "prisma migrate deploy"
+    "migrate:deploy": "prisma migrate deploy",
+    "test": "node --test --experimental-strip-types \"lib/*.test.ts\""
   },
   "devDependencies": {
+    "@types/node": "^26.1.2",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "dotenv": "^17.4.2",
-    "prisma": "^7.9.1"
+    "prisma": "^7.9.1",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2"
   },
   "dependencies": {
-    "@prisma/client": "^7.9.1"
+    "@prisma/client": "^7.9.1",
+    "next": "^16.2.12",
+    "next-auth": "^5.0.0-beta.32",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zod": "^4.4.3"
   }
 }

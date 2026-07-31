@@ -10,11 +10,12 @@
     "prisma:studio": "prisma studio",
     "test:invariantes": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f prisma/testes/invariantes.sql",
     "migrate:deploy": "prisma migrate deploy",
-    "test": "node --test --experimental-strip-types \"lib/*.test.ts\"",
+    "test": "node --test --experimental-strip-types \"lib/*.test.ts\" \"lib/**/*.test.ts\"",
     "seed": "tsx prisma/seed.ts",
     "typecheck": "tsc --noEmit",
     "build": "next build",
-    "dev": "next dev"
+    "dev": "next dev",
+    "test:diferencial": "python3 lib/prazos/verificacao/referencia.py > /tmp/casos.json && node --experimental-strip-types lib/prazos/verificacao/diferencial.ts /tmp/casos.json"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",

@@ -168,3 +168,16 @@ DROP INDEX IF EXISTS "publicacao_hashConteudo_numeroProcessoDigitos_dataDisponib
 CREATE UNIQUE INDEX "publicacao_hashConteudo_numeroProcessoDigitos_dataDisponibi_key"
   ON "publicacao" ("hashConteudo", "numeroProcessoDigitos", "dataDisponibilizacao")
   NULLS NOT DISTINCT;
+
+-- -----------------------------------------------------------------------------
+-- 8. FERIADOS — mesma correcao de NULL do item 7
+--
+-- Feriado NACIONAL tem uf e municipio nulos. Com indice UNIQUE padrao, NULL <>
+-- NULL e o mesmo feriado nacional pode ser cadastrado duas vezes — o que faria
+-- o motor de prazos contar o dia duas vezes ao compor o calendario.
+-- -----------------------------------------------------------------------------
+DROP INDEX IF EXISTS "feriado_geral_data_abrangencia_uf_municipio_key";
+
+CREATE UNIQUE INDEX "feriado_geral_data_abrangencia_uf_municipio_key"
+  ON "feriado_geral" ("data", "abrangencia", "uf", "municipio")
+  NULLS NOT DISTINCT;

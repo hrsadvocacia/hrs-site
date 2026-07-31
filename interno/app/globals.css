@@ -1,0 +1,338 @@
+/*
+ * Sem @import de fonte externa: cada requisicao a um CDN a partir de uma tela
+ * com dado de cliente entrega padrao de uso a um terceiro que nao e operador
+ * contratado. A pilha de fontes do sistema resolve.
+ */
+
+:root {
+  --tinta: #16202c;
+  --tinta-suave: #5a6a7a;
+  --papel: #f6f7f9;
+  --superficie: #ffffff;
+  --borda: #dde3ea;
+  --marca: #1f3a5f;
+  --marca-clara: #e8eef6;
+  --alerta: #b3261e;
+  --alerta-fundo: #fdecea;
+  --atencao: #8a5a00;
+  --atencao-fundo: #fff6e5;
+  --ok: #1d6b3f;
+  --ok-fundo: #e7f4ec;
+  --raio: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--marca);
+}
+
+/* ---------- estrutura ---------- */
+.topo {
+  background: var(--marca);
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.topo .marca {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.topo nav {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.topo nav a {
+  color: #dbe6f5;
+  text-decoration: none;
+  padding: 0.25rem 0;
+  border-bottom: 2px solid transparent;
+}
+
+.topo nav a:hover {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+.topo .usuario {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: #cfdcee;
+  text-align: right;
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 0.25rem;
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 2rem 0 0.75rem;
+}
+
+.legenda {
+  color: var(--tinta-suave);
+  margin: 0 0 1.5rem;
+}
+
+/* ---------- cartoes e listas ---------- */
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 1rem 1.15rem;
+  margin-bottom: 1rem;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  overflow: hidden;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--borda);
+  vertical-align: top;
+}
+
+th {
+  background: #eef2f7;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--tinta-suave);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.rolagem {
+  overflow-x: auto;
+}
+
+/* ---------- formularios ---------- */
+form.formulario {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 1.25rem;
+  max-width: 720px;
+}
+
+fieldset {
+  border: none;
+  border-top: 1px solid var(--borda);
+  padding: 1rem 0 0;
+  margin: 1.5rem 0 0;
+}
+
+fieldset:first-of-type {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+legend {
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--tinta-suave);
+  padding: 0;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.85rem;
+}
+
+label > span {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+label small {
+  display: block;
+  font-weight: 400;
+  color: var(--tinta-suave);
+  margin-top: 0.2rem;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+  color: inherit;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--marca);
+  outline-offset: 1px;
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0 1rem;
+}
+
+button,
+.botao {
+  background: var(--marca);
+  color: #fff;
+  border: 1px solid var(--marca);
+  border-radius: 6px;
+  padding: 0.55rem 1.1rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+button:hover,
+.botao:hover {
+  filter: brightness(1.12);
+}
+
+.botao-secundario {
+  background: transparent;
+  color: var(--marca);
+}
+
+.acoes {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.25rem;
+}
+
+/* ---------- avisos ---------- */
+.aviso {
+  border-radius: var(--raio);
+  padding: 0.7rem 0.9rem;
+  margin-bottom: 1rem;
+  border: 1px solid;
+  font-size: 0.9rem;
+}
+
+.aviso-erro {
+  background: var(--alerta-fundo);
+  border-color: #f3c4c0;
+  color: var(--alerta);
+}
+
+.aviso-atencao {
+  background: var(--atencao-fundo);
+  border-color: #f0dcae;
+  color: var(--atencao);
+}
+
+.aviso-ok {
+  background: var(--ok-fundo);
+  border-color: #bfe0cc;
+  color: var(--ok);
+}
+
+.etiqueta {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  background: var(--marca-clara);
+  color: var(--marca);
+}
+
+.etiqueta-pendente {
+  background: var(--atencao-fundo);
+  color: var(--atencao);
+}
+
+.etiqueta-alerta {
+  background: var(--alerta-fundo);
+  color: var(--alerta);
+}
+
+.vazio {
+  color: var(--tinta-suave);
+  font-style: italic;
+  padding: 1rem 0;
+}
+
+/* ---------- login ---------- */
+.entrada {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.entrada form {
+  width: 100%;
+  max-width: 380px;
+}
+
+.entrada h1 {
+  text-align: center;
+  letter-spacing: 0.12em;
+}
+
+.entrada .legenda {
+  text-align: center;
+}

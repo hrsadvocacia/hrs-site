@@ -10,7 +10,11 @@
     "prisma:studio": "prisma studio",
     "test:invariantes": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f prisma/testes/invariantes.sql",
     "migrate:deploy": "prisma migrate deploy",
-    "test": "node --test --experimental-strip-types \"lib/*.test.ts\""
+    "test": "node --test --experimental-strip-types \"lib/*.test.ts\"",
+    "seed": "tsx prisma/seed.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "next build",
+    "dev": "next dev"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",
@@ -23,6 +27,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "next": "^16.2.12",
     "next-auth": "^5.0.0-beta.32",

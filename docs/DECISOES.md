@@ -99,7 +99,7 @@ do advogado, as regras estruturantes estão em CHECK constraints e triggers
 - lead só é contatável com consentimento datado (Prov. 205/2021 + LGPD art. 7º, I);
 - provisão de êxito nunca pode estar marcada como recebida.
 
-Verificadas por `prisma/testes/invariantes.sql`: 32 casos que tentam ativamente
+Verificadas por `prisma/testes/invariantes.sql`: 30 casos que tentam ativamente
 quebrar cada regra, executados contra PostgreSQL 16 real. Constraint que nunca
 foi violada de propósito não é garantia, é esperança.
 
@@ -155,16 +155,112 @@ Pendências registradas: o Google atua como **operador** sem contrato formalizad
 e o dado fica fora do banco com controle de acesso próprio. Migração para a
 tabela `lead` fica na Fase 3.
 
+### D-0.11 — Sem dependência para criptografia, TOTP e hash de senha
+
+`node:crypto` resolve os três. Uma biblioteca a mais nessa camada é superfície de
+supply chain no ponto exato que protege dado de saúde e segundo fator.
+
+O TOTP em particular foi implementado em vez de importado porque a RFC 6238
+publica **vetores de teste oficiais**: dá para *provar* que a implementação está
+correta, em vez de confiar no changelog de um pacote. Todos os vetores do
+Apêndice B passam (SHA-1, SHA-256, SHA-512).
+
+Senhas usam **scrypt** (RFC 7914): resiste melhor que bcrypt a hardware
+dedicado e evita depender de binário nativo de argon2 no runtime da Vercel.
+
+### D-0.12 — Login em etapa única
+
+Senha e código TOTP são conferidos na mesma chamada. Um fluxo em duas etapas
+exigiria emitir uma sessão "meio autenticada" entre a senha e o código — um
+estado a mais para proteger e um alvo a mais para contornar o 2FA. Ou os três
+fatores conferem e nasce sessão completa, ou não nasce sessão alguma.
+
+Todas as recusas devolvem a **mesma** mensagem, para não revelar se o e-mail
+existe, se a senha estava certa ou se apenas o código falhou.
+
+Anti-replay: o contador TOTP usado é gravado e o mesmo código não vale duas
+vezes — verificado no sistema em execução, não só em teste unitário.
+
+### D-0.13 — Sessão curta, com reconferência no banco
+
+O `proxy` (antigo middleware) roda na borda e só confere se há JWT válido, o que
+continuaria verdadeiro por até 30 minutos depois de alguém ser desligado do
+escritório. `lib/sessao.ts` reconfere usuário ativo e perfil no banco a cada
+página e server action, no runtime Node. Perfil revogado perde acesso na hora.
+
+### D-0.14 — Nenhuma requisição a terceiros
+
+Sem fonte externa, sem CDN, sem telemetria do Next. Cada chamada a partir de uma
+tela com dado de cliente entregaria padrão de uso a quem não é operador
+contratado formalmente. A pilha de fontes do sistema resolve a tipografia.
+
+### D-0.15 — Segundo defeito de NULL, agora em `feriado_geral`
+
+Mesma classe do D-0.7. Feriado nacional tem `uf` e `municipio` nulos; com índice
+`UNIQUE` padrão o mesmo feriado entraria duas vezes, e o motor de prazos
+descontaria o dia em dobro ao compor o calendário. Corrigido com
+`NULLS NOT DISTINCT`.
+
+Vale a generalização: **toda chave única deste schema que contenha coluna
+anulável precisa de `NULLS NOT DISTINCT`**, e o Prisma não expressa isso.
+
+### D-0.16 — Calendário incompleto por opção deliberada
+
+O seed carrega apenas feriados nacionais de lei federal. Feriado estadual,
+municipal e suspensão por portaria ficam em branco, listados em
+`docs/CALENDARIO.md` para preenchimento humano com fonte registrada.
+
+Um feriado inventado é **pior** que um ausente: o motor contaria um dia útil a
+menos e entregaria data fatal errada com aparência de fundamentada. Por isso os
+calendários nascem em `RASCUNHO` e as revisões anuais em `PENDENTE`.
+
+### D-0.17 — LACUNA: rate limiting por IP não implementado
+
+Há bloqueio de conta após 5 tentativas malsucedidas, o que contém força bruta
+contra uma conta conhecida. **Não há** limite por origem, então é possível
+inflar a tabela de auditoria com tentativas anônimas. Fazer isso direito exige
+armazenamento compartilhado (Upstash/Redis) — dependência que não quis
+adicionar sem decisão do escritório. Entra na Fase 1.
+
+### Verificação da Fase 0
+
+Nada aqui foi entregue "provavelmente funcionando":
+
+- 115 testes unitários das bibliotecas puras, verdes;
+- 30 testes de invariante que tentam ativamente violar cada regra, executados
+  contra PostgreSQL 16 real;
+- vetores de CPF, CNPJ, dígito verificador CNJ e datas de Páscoa conferidos por
+  implementação independente, em Python;
+- migrations aplicadas de verdade e seed executado duas vezes para provar
+  idempotência;
+- build de produção do Next.js;
+- login exercitado de ponta a ponta com código TOTP real, e os casos negativos
+  (código errado, senha errada, usuário inexistente, reuso do código) todos
+  bloqueados no sistema em execução;
+- imutabilidade da auditoria testada por conexão de superusuário — `UPDATE` e
+  `DELETE` recusados.
+
 ---
 
-### Perguntas em aberto para a Fase 1
+### Decisões de contagem tomadas pelo escritório (para a Fase 1)
 
-1. **Prazo em dias corridos no previdenciário administrativo (INSS).** O enum
-   `RegimeContagem` prevê `DIAS_CORRIDOS`, mas quais atos do escritório usam esse
-   regime precisa ser confirmado antes de o motor decidir sozinho.
-2. **Recesso de 20/12 a 20/01 — suspensão x prorrogação.** Precisa confirmar o
-   tratamento desejado para prazo que *iniciaria* dentro do recesso versus prazo
-   que apenas o atravessa.
-3. **Prazo em dobro por litisconsortes (CPC 229).** Só se aplica a autos físicos;
-   como o escritório trabalha majoritariamente em PJe, confirmar se deve
-   permanecer disponível como opção manual.
+**D-1.1 — Sem prazo em dobro.** O CPC 229, §2º já afasta a dobra por
+litisconsórcio em autos eletrônicos, que é a realidade do PJe. A ausência erra
+para o lado seguro: o sistema calcula data igual ou anterior à real, nunca
+posterior — no pior caso protocola-se cedo demais, e não há caminho para perda
+de prazo.
+
+**D-1.2 — Recesso de 20/12 a 20/01.** Prazo processual **suspende** o curso
+(CLT art. 775-A; CPC art. 220). Prazo penal, material e administrativo
+**continua correndo**. Suspender não é "não contar o dia": o relógio para e
+volta a correr em 21/01, de modo que prazo que venceria dentro do recesso é
+empurrado para depois dele, e prazo cujo termo inicial cairia no recesso só
+começa a correr no primeiro dia útil seguinte a 20/01.
+
+**D-1.3 — Dias corridos.** Aplicável a prazo do INSS em sede administrativa
+(Lei 9.784/1999) e a prazo material/decadencial. Criado também
+`DIAS_CORRIDOS_PENAL` (CPP art. 798), separado porque ambos correm no recesso
+mas o fundamento legal exibido ao advogado é diferente.
+
+O comportamento no recesso ficou amarrado ao `RegimeContagem`, com o fundamento
+de cada caso documentado no próprio enum — e não como regra implícita no motor.

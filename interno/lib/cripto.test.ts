@@ -40,7 +40,7 @@ describe("cifragem de dado sensivel (AES-256-GCM)", () => {
   it("recusa blob adulterado — falha fechada, nao devolve lixo", () => {
     const { blob, versaoChave } = cifrar("laudo pericial", contexto);
     const adulterado = Buffer.from(blob);
-    adulterado[adulterado.length - 1] ^= 0xff;
+    adulterado[adulterado.length - 1] = (adulterado.at(-1) ?? 0) ^ 0xff;
     assert.throws(() => decifrar(adulterado, contexto, versaoChave));
   });
 

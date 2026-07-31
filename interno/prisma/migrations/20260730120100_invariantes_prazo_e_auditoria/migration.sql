@@ -111,11 +111,6 @@ ALTER TABLE "prazo" ADD CONSTRAINT "prazo_datas_coerentes" CHECK (
 
 ALTER TABLE "prazo" ADD CONSTRAINT "prazo_dias_positivos" CHECK ("prazoDias" > 0);
 
--- Prazo em dobro exige fundamento explicito (CPC 183 / 186 / 229).
-ALTER TABLE "prazo" ADD CONSTRAINT "prazo_dobro_fundamentado" CHECK (
-  "prazoEmDobro" = false OR "fundamentoDobro" IS NOT NULL
-);
-
 -- -----------------------------------------------------------------------------
 -- 3. CAPTURA: "nao houve publicacao" e uma AFIRMACAO, nao um silencio
 -- -----------------------------------------------------------------------------

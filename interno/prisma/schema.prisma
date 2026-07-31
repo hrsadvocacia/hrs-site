@@ -381,12 +381,29 @@ enum RamoJustica {
   SUPERIOR
 }
 
+/// Regime de contagem. Determina TAMBEM o comportamento no recesso forense
+/// (20/12 a 20/01), decidido pelo escritorio:
+///   - prazo processual SUSPENDE o curso no recesso;
+///   - prazo penal, material e administrativo CONTINUA correndo.
+/// Suspender nao e o mesmo que "nao contar o dia": o relogio para e volta a
+/// correr em 21/01, de modo que prazo que venceria dentro do recesso e empurrado
+/// para depois dele, e prazo cujo termo inicial cairia no recesso so comeca a
+/// correr no primeiro dia util seguinte a 20/01.
 enum RegimeContagem {
   /// CLT art. 775 (redacao da Lei 13.467/2017) — dias uteis.
+  /// SUSPENDE no recesso: CLT art. 775-A.
   DIAS_UTEIS_TRABALHISTA
+
   /// CPC art. 219 — dias uteis, apenas prazos processuais.
+  /// SUSPENDE no recesso: CPC art. 220.
   DIAS_UTEIS_CPC
-  /// Prazos materiais/decadenciais e sede administrativa (INSS).
+
+  /// CPP art. 798 — prazos continuos e peremptorios. NAO suspende no recesso:
+  /// o art. 220 do CPC alcanca apenas o prazo processual civil.
+  DIAS_CORRIDOS_PENAL
+
+  /// Prazos materiais/decadenciais e sede administrativa (INSS, Lei 9.784/1999).
+  /// NAO suspende no recesso, que e instituto do processo judicial.
   DIAS_CORRIDOS
 }
 
@@ -753,10 +770,10 @@ model Prazo {
   regimeContagem            RegimeContagem
   tribunalId                String         @db.Uuid
   tribunal                  Tribunal       @relation(fields: [tribunalId], references: [id])
-  /// Prazo em dobro: Fazenda Publica (CPC 183), Defensoria (CPC 186),
-  /// litisconsortes com procuradores distintos em autos fisicos (CPC 229).
-  prazoEmDobro              Boolean        @default(false)
-  fundamentoDobro           String?
+  // NAO ha prazo em dobro no produto (decisao do escritorio, D-1.1).
+  // O CPC 229, 2o ja afasta a dobra por litisconsorcio em autos eletronicos, que
+  // e a realidade do PJe. A ausencia erra para o lado seguro: o sistema calcula
+  // data igual ou anterior a real, nunca posterior.
 
   // --- RESULTADO DO CALCULO ---------------------------------------------------
   dataFatal         DateTime            @db.Date

@@ -143,15 +143,7 @@ SELECT deve_falhar(
       'CLT art. 775', '[]'::jsonb, 'motor-1.0.0',
       '11111111-1111-1111-1111-111111111111', now())$$);
 
-SELECT deve_falhar(
-  'prazo em dobro sem fundamento legal e recusado',
-  sql_prazo('a0000000-0000-0000-0000-000000000008', 'MANUAL', 'PENDENTE_CONFERENCIA',
-    ', "prazoEmDobro"', ', true'));
 
-SELECT deve_passar(
-  'prazo em dobro COM fundamento e aceito',
-  sql_prazo('a0000000-0000-0000-0000-000000000009', 'MANUAL', 'PENDENTE_CONFERENCIA',
-    ', "prazoEmDobro", "fundamentoDobro"', $v$, true, 'CPC art. 183 - Fazenda Publica'$v$));
 
 -- =============================================================================
 -- 4. Auditoria append-only

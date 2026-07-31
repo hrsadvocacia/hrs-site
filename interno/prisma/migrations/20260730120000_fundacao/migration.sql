@@ -26,7 +26,7 @@ CREATE TYPE "CategoriaDadoSensivel" AS ENUM ('LAUDO_MEDICO', 'CID', 'EXAME', 'AT
 CREATE TYPE "RamoJustica" AS ENUM ('TRABALHISTA', 'FEDERAL', 'ESTADUAL', 'SUPERIOR');
 
 -- CreateEnum
-CREATE TYPE "RegimeContagem" AS ENUM ('DIAS_UTEIS_TRABALHISTA', 'DIAS_UTEIS_CPC', 'DIAS_CORRIDOS');
+CREATE TYPE "RegimeContagem" AS ENUM ('DIAS_UTEIS_TRABALHISTA', 'DIAS_UTEIS_CPC', 'DIAS_CORRIDOS_PENAL', 'DIAS_CORRIDOS');
 
 -- CreateEnum
 CREATE TYPE "AbrangenciaFeriado" AS ENUM ('NACIONAL', 'ESTADUAL', 'MUNICIPAL');
@@ -441,8 +441,6 @@ CREATE TABLE "prazo" (
     "prazoDias" INTEGER NOT NULL,
     "regimeContagem" "RegimeContagem" NOT NULL,
     "tribunalId" UUID NOT NULL,
-    "prazoEmDobro" BOOLEAN NOT NULL DEFAULT false,
-    "fundamentoDobro" TEXT,
     "dataFatal" DATE NOT NULL,
     "diasUteisContados" INTEGER NOT NULL,
     "feriadosAplicados" JSONB NOT NULL,

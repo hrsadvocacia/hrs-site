@@ -102,14 +102,14 @@ export interface CamposCnj {
 
 const SEGMENTOS: Record<string, string> = {
   "1": "Supremo Tribunal Federal",
-  "2": "Conselho Nacional de Justica",
-  "3": "Superior Tribunal de Justica",
-  "4": "Justica Federal",
-  "5": "Justica do Trabalho",
-  "6": "Justica Eleitoral",
-  "7": "Justica Militar da Uniao",
-  "8": "Justica dos Estados e do DF",
-  "9": "Justica Militar Estadual",
+  "2": "Conselho Nacional de Justiça",
+  "3": "Superior Tribunal de Justiça",
+  "4": "Justiça Federal",
+  "5": "Justiça do Trabalho",
+  "6": "Justiça Eleitoral",
+  "7": "Justiça Militar da União",
+  "8": "Justiça dos Estados e do DF",
+  "9": "Justiça Militar Estadual",
 };
 
 export function descreverSegmentoCnj(segmento: string): string | undefined {

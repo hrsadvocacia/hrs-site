@@ -32,7 +32,7 @@ describe("base32 (RFC 4648)", () => {
   });
 
   it("recusa caractere fora do alfabeto", () => {
-    assert.throws(() => deBase32("ABC1"), /invalido/);
+    assert.throws(() => deBase32("ABC1"), /inválido/);
   });
 });
 

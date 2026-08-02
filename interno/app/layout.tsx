@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Rodape } from "./rodape";
 
 export const metadata: Metadata = {
   title: "HRS Interno",
@@ -14,7 +15,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        {children}
+        <Rodape />
+      </body>
     </html>
   );
 }

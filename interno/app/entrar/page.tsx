@@ -34,21 +34,30 @@ export default async function Entrar({
 
   return (
     <div className="entrada">
-      <form className="formulario" action={entrar}>
-        <h1>HRS</h1>
-        <p className="legenda">Sistema interno de gestao</p>
+      <div className="folha">
+        <div className="marca">
+          <img
+            src="/marca/hrs-logo.png"
+            alt="HRS Advocacia &amp; Consultoria Jurídica"
+            width={190}
+            height={97}
+          />
+        </div>
+        <hr className="regra-ouro" />
+        <form action={entrar}>
+          <h1>Sistema interno</h1>
 
         {erro && (
           // Mensagem unica de proposito: nao revela se o e-mail existe, se a
           // senha estava certa ou se so o codigo falhou.
           <p className="aviso aviso-erro">
-            Nao foi possivel entrar. Confira e-mail, senha e o codigo do
+            Não foi possível entrar. Confira e-mail, senha e o código do
             aplicativo autenticador.
           </p>
         )}
         {motivo === "sessao-invalida" && (
           <p className="aviso aviso-atencao">
-            Sua sessao foi encerrada. Entre novamente.
+            Sua sessão foi encerrada. Entre novamente.
           </p>
         )}
 
@@ -68,7 +77,7 @@ export default async function Entrar({
         </label>
 
         <label>
-          <span>Codigo do aplicativo</span>
+          <span>Código do aplicativo</span>
           <input
             type="text"
             name="codigo"
@@ -80,15 +89,18 @@ export default async function Entrar({
             placeholder="000000"
           />
           <small>
-            Seis digitos do aplicativo autenticador. O segundo fator e
-            obrigatorio para todos os perfis.
+            Seis dígitos do aplicativo autenticador. O segundo fator e
+            obrigatório para todos os perfis.
           </small>
         </label>
 
-        <div className="acoes">
-          <button type="submit">Entrar</button>
-        </div>
-      </form>
+          <div className="acoes">
+            <button type="submit" style={{ width: "100%", textAlign: "center" }}>
+              Entrar
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

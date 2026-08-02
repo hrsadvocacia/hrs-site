@@ -16,10 +16,10 @@ import { somenteDigitos, validarCpfCnpj } from "@/lib/documentos";
  */
 const esquemaCliente = z.object({
   tipoPessoa: z.enum(["FISICA", "JURIDICA"]),
-  nome: z.string().trim().min(3, "Informe o nome completo ou a razao social."),
+  nome: z.string().trim().min(3, "Informe o nome completo ou a razão social."),
   nomeSocial: z.string().trim().optional().or(z.literal("")),
   nomeFantasia: z.string().trim().optional().or(z.literal("")),
-  cpfCnpj: z.string().refine(validarCpfCnpj, "CPF ou CNPJ invalido."),
+  cpfCnpj: z.string().refine(validarCpfCnpj, "CPF ou CNPJ inválido."),
   dataNascimento: z.string().optional().or(z.literal("")),
   estadoCivil: z.string().trim().optional().or(z.literal("")),
   profissao: z.string().trim().optional().or(z.literal("")),
@@ -33,7 +33,7 @@ const esquemaCliente = z.object({
   origemDetalhe: z.string().trim().optional().or(z.literal("")),
   unidadeResponsavel: z.enum(["GOIANIA", "TERESINA", "TIMON"]),
   observacoes: z.string().trim().optional().or(z.literal("")),
-  // Endereco principal
+  // Endereço principal
   cep: z.string().trim().optional().or(z.literal("")),
   logradouro: z.string().trim().optional().or(z.literal("")),
   numero: z.string().trim().optional().or(z.literal("")),
@@ -43,7 +43,7 @@ const esquemaCliente = z.object({
   // Contatos
   telefone: z.string().trim().optional().or(z.literal("")),
   whatsapp: z.string().trim().optional().or(z.literal("")),
-  email: z.string().trim().email("E-mail invalido.").optional().or(z.literal("")),
+  email: z.string().trim().email("E-mail inválido.").optional().or(z.literal("")),
 });
 
 export interface EstadoFormulario {
@@ -96,8 +96,8 @@ export async function criarCliente(
   });
   if (jaExiste) {
     return {
-      erro: "Ja existe cliente cadastrado com este CPF/CNPJ.",
-      campos: { cpfCnpj: "Documento ja cadastrado." },
+      erro: "Já existe cliente cadastrado com este CPF/CNPJ.",
+      campos: { cpfCnpj: "Documento já cadastrado." },
       valores: bruto,
     };
   }
@@ -168,10 +168,10 @@ export async function editarCliente(
 ): Promise<EstadoFormulario> {
   const usuario = await exigirPermissao("cliente", "editar");
   const id = String(dados.get("id") ?? "");
-  if (!id) return { erro: "Registro nao identificado." };
+  if (!id) return { erro: "Registro não identificado." };
 
   const antes = await prisma.cliente.findUnique({ where: { id } });
-  if (!antes) return { erro: "Cliente nao encontrado." };
+  if (!antes) return { erro: "Cliente não encontrado." };
 
   const bruto = Object.fromEntries(
     CAMPOS_CLIENTE.map((campo) => [campo, opcional(dados.get(campo))]),

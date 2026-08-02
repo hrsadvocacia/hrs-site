@@ -4,6 +4,7 @@ import { exigirPermissao } from "@/lib/sessao";
 import { prisma } from "@/lib/prisma";
 import { pode } from "@/lib/rbac";
 import { formatarCpfCnpj } from "@/lib/documentos";
+import { ORIGEM_CLIENTE, UNIDADE, rotulo } from "@/lib/rotulos";
 
 export const metadata = { title: "Clientes — HRS Interno" };
 
@@ -95,8 +96,8 @@ export default async function Clientes({
                       {!c.ativo && <> <span className="etiqueta">inativo</span></>}
                     </td>
                     <td>{formatarCpfCnpj(c.cpfCnpj)}</td>
-                    <td>{ROTULO_ORIGEM[c.origem] ?? c.origem}</td>
-                    <td>{c.unidadeResponsavel}</td>
+                    <td>{rotulo(ORIGEM_CLIENTE, c.origem)}</td>
+                    <td>{rotulo(UNIDADE, c.unidadeResponsavel)}</td>
                     <td>{c._count.processos}</td>
                   </tr>
                 ))}

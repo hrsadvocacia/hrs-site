@@ -5,6 +5,7 @@ import { exigirPermissao } from "@/lib/sessao";
 import { prisma } from "@/lib/prisma";
 import { pode } from "@/lib/rbac";
 import { formatarCpfCnpj } from "@/lib/documentos";
+import { ORIGEM_CLIENTE, SITUACAO_PROCESSO, TIPO_CONTATO, TIPO_PESSOA, UNIDADE, rotulo } from "@/lib/rotulos";
 import { registrar } from "@/lib/auditoria";
 import { FormularioCliente } from "../formulario";
 import { editarCliente } from "../acoes";
@@ -55,14 +56,14 @@ export default async function DetalheCliente({
       <main>
         <h1>{cliente.nome}</h1>
         <p className="legenda">
-          {formatarCpfCnpj(cliente.cpfCnpj)} — {cliente.unidadeResponsavel}
+          {formatarCpfCnpj(cliente.cpfCnpj)} — {rotulo(UNIDADE, cliente.unidadeResponsavel)}
         </p>
 
         {modoEdicao ? (
           <FormularioCliente
             acao={editarCliente}
             id={cliente.id}
-            rotuloBotao="Salvar alteracoes"
+            rotuloBotao="Salvar alterações"
             inicial={{
               tipoPessoa: cliente.tipoPessoa,
               nome: cliente.nome,
@@ -91,9 +92,9 @@ export default async function DetalheCliente({
           <>
             <div className="cartao">
               <div className="linha">
-                <div><strong>Tipo</strong><div>{cliente.tipoPessoa}</div></div>
-                <div><strong>Origem</strong><div>{cliente.origem}</div></div>
-                <div><strong>Situacao</strong><div>{cliente.ativo ? "Ativo" : "Inativo"}</div></div>
+                <div><strong>Tipo</strong><div>{rotulo(TIPO_PESSOA, cliente.tipoPessoa)}</div></div>
+                <div><strong>Origem</strong><div>{rotulo(ORIGEM_CLIENTE, cliente.origem)}</div></div>
+                <div><strong>Situação</strong><div>{cliente.ativo ? "Ativo" : "Inativo"}</div></div>
               </div>
               {endereco && (
                 <p style={{ marginBottom: 0 }}>
@@ -112,7 +113,7 @@ export default async function DetalheCliente({
               <div className="cartao">
                 {cliente.contatos.map((c) => (
                   <div key={c.id}>
-                    <strong>{c.tipo}:</strong> {c.valor}
+                    <strong>{rotulo(TIPO_CONTATO, c.tipo)}:</strong> {c.valor}
                   </div>
                 ))}
               </div>
@@ -125,7 +126,7 @@ export default async function DetalheCliente({
               <div className="rolagem">
                 <table>
                   <thead>
-                    <tr><th>Numero CNJ</th><th>Situacao</th></tr>
+                    <tr><th>Número CNJ</th><th>Situação</th></tr>
                   </thead>
                   <tbody>
                     {cliente.processos.map((p) => (
@@ -135,7 +136,7 @@ export default async function DetalheCliente({
                             {p.processo.numeroCnj}
                           </Link>
                         </td>
-                        <td>{p.processo.situacao}</td>
+                        <td>{rotulo(SITUACAO_PROCESSO, p.processo.situacao)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -143,18 +144,18 @@ export default async function DetalheCliente({
               </div>
             )}
 
-            <h2>Dados sensiveis de saude</h2>
+            <h2>Dados sensíveis de saúde</h2>
             <div className="cartao">
               {pode(usuario.perfil, "dadoSensivel", "ler") ? (
                 <p style={{ margin: 0 }}>
                   {cliente._count.dadosSensiveis} registro(s) em cadastro
-                  apartado e cifrado. A leitura de cada um e registrada
+                  apartado e cifrado. A leitura de cada um é registrada
                   individualmente (LGPD art. 11, II, &quot;d&quot;). Cadastro
-                  disponivel a partir da Fase 3.
+                  disponível a partir da Fase 3.
                 </p>
               ) : (
                 <p style={{ margin: 0 }} className="vazio">
-                  Seu perfil nao tem acesso a dado sensivel de saude.
+                  Seu perfil não tem acesso a dado sensível de saúde.
                 </p>
               )}
             </div>

@@ -26,36 +26,36 @@ const prisma = new PrismaClient({
 const ANOS_CALENDARIO = [2026, 2027];
 
 const TRIBUNAIS = [
-  { codigo: "TRT18", sigla: "TRT-18", nome: "Tribunal Regional do Trabalho da 18a Regiao", ramo: "TRABALHISTA", uf: "GO", regime: "DIAS_UTEIS_TRABALHISTA" },
-  { codigo: "TRT22", sigla: "TRT-22", nome: "Tribunal Regional do Trabalho da 22a Regiao", ramo: "TRABALHISTA", uf: "PI", regime: "DIAS_UTEIS_TRABALHISTA" },
-  { codigo: "TRT16", sigla: "TRT-16", nome: "Tribunal Regional do Trabalho da 16a Regiao", ramo: "TRABALHISTA", uf: "MA", regime: "DIAS_UTEIS_TRABALHISTA" },
+  { codigo: "TRT18", sigla: "TRT-18", nome: "Tribunal Regional do Trabalho da 18ª Região", ramo: "TRABALHISTA", uf: "GO", regime: "DIAS_UTEIS_TRABALHISTA" },
+  { codigo: "TRT22", sigla: "TRT-22", nome: "Tribunal Regional do Trabalho da 22ª Região", ramo: "TRABALHISTA", uf: "PI", regime: "DIAS_UTEIS_TRABALHISTA" },
+  { codigo: "TRT16", sigla: "TRT-16", nome: "Tribunal Regional do Trabalho da 16ª Região", ramo: "TRABALHISTA", uf: "MA", regime: "DIAS_UTEIS_TRABALHISTA" },
   { codigo: "TST", sigla: "TST", nome: "Tribunal Superior do Trabalho", ramo: "TRABALHISTA", uf: null, regime: "DIAS_UTEIS_TRABALHISTA" },
-  { codigo: "TRF1", sigla: "TRF-1", nome: "Tribunal Regional Federal da 1a Regiao", ramo: "FEDERAL", uf: null, regime: "DIAS_UTEIS_CPC" },
-  { codigo: "TJGO", sigla: "TJGO", nome: "Tribunal de Justica do Estado de Goias", ramo: "ESTADUAL", uf: "GO", regime: "DIAS_UTEIS_CPC" },
-  { codigo: "TJPI", sigla: "TJPI", nome: "Tribunal de Justica do Estado do Piaui", ramo: "ESTADUAL", uf: "PI", regime: "DIAS_UTEIS_CPC" },
-  { codigo: "TJMA", sigla: "TJMA", nome: "Tribunal de Justica do Estado do Maranhao", ramo: "ESTADUAL", uf: "MA", regime: "DIAS_UTEIS_CPC" },
+  { codigo: "TRF1", sigla: "TRF-1", nome: "Tribunal Regional Federal da 1ª Região", ramo: "FEDERAL", uf: null, regime: "DIAS_UTEIS_CPC" },
+  { codigo: "TJGO", sigla: "TJGO", nome: "Tribunal de Justiça do Estado de Goiás", ramo: "ESTADUAL", uf: "GO", regime: "DIAS_UTEIS_CPC" },
+  { codigo: "TJPI", sigla: "TJPI", nome: "Tribunal de Justiça do Estado do Piauí", ramo: "ESTADUAL", uf: "PI", regime: "DIAS_UTEIS_CPC" },
+  { codigo: "TJMA", sigla: "TJMA", nome: "Tribunal de Justiça do Estado do Maranhão", ramo: "ESTADUAL", uf: "MA", regime: "DIAS_UTEIS_CPC" },
   { codigo: "STJ", sigla: "STJ", nome: "Superior Tribunal de Justica", ramo: "SUPERIOR", uf: null, regime: "DIAS_UTEIS_CPC" },
 ] as const;
 
 /** Orgaos das tres pracas onde o escritorio atua. O MUNICIPIO importa: e ele
  *  que determina quais feriados municipais alcancam o prazo do processo. */
 const ORGAOS: ReadonlyArray<{ tribunal: string; nome: string; municipio: string; uf: string }> = [
-  { tribunal: "TRT18", nome: "Varas do Trabalho de Goiania", municipio: "Goiania", uf: "GO" },
-  { tribunal: "TRT18", nome: "Vara do Trabalho de Anapolis", municipio: "Anapolis", uf: "GO" },
+  { tribunal: "TRT18", nome: "Varas do Trabalho de Goiânia", municipio: "Goiânia", uf: "GO" },
+  { tribunal: "TRT18", nome: "Vara do Trabalho de Anápolis", municipio: "Anápolis", uf: "GO" },
   { tribunal: "TRT22", nome: "Varas do Trabalho de Teresina", municipio: "Teresina", uf: "PI" },
   { tribunal: "TRT16", nome: "Vara do Trabalho de Timon", municipio: "Timon", uf: "MA" },
-  { tribunal: "TRT16", nome: "Varas do Trabalho de Sao Luis", municipio: "Sao Luis", uf: "MA" },
-  { tribunal: "TJGO", nome: "Comarca de Goiania", municipio: "Goiania", uf: "GO" },
+  { tribunal: "TRT16", nome: "Varas do Trabalho de Sao Luis", municipio: "São Luís", uf: "MA" },
+  { tribunal: "TJGO", nome: "Comarca de Goiânia", municipio: "Goiânia", uf: "GO" },
   { tribunal: "TJPI", nome: "Comarca de Teresina", municipio: "Teresina", uf: "PI" },
   { tribunal: "TJMA", nome: "Comarca de Timon", municipio: "Timon", uf: "MA" },
-  { tribunal: "TRF1", nome: "Subsecao Judiciaria de Goiania", municipio: "Goiania", uf: "GO" },
-  { tribunal: "TRF1", nome: "Subsecao Judiciaria de Teresina", municipio: "Teresina", uf: "PI" },
+  { tribunal: "TRF1", nome: "Subseção Judiciária de Goiânia", municipio: "Goiânia", uf: "GO" },
+  { tribunal: "TRF1", nome: "Subseção Judiciária de Teresina", municipio: "Teresina", uf: "PI" },
 ];
 
 /** Equipe conforme publicado em equipe.html do site institucional. */
 const EQUIPE = [
   {
-    nome: "Aluisio Henrique de Holanda Filho",
+    nome: "Aluísio Henrique de Holanda Filho",
     email: "aluisio@hrsadvocacia.com.br",
     perfil: "SOCIO",
     unidade: "TERESINA",
@@ -76,7 +76,7 @@ const EQUIPE = [
     oab: [{ numero: "76478", uf: "GO", principal: true }],
   },
   {
-    nome: "Administracao do sistema",
+    nome: "Administração do sistema",
     email: "admin@hrsadvocacia.com.br",
     perfil: "ADMIN",
     unidade: "GOIANIA",
@@ -233,7 +233,7 @@ async function main() {
           status: "RASCUNHO",
           criadoPorId: admin.id,
           observacao:
-            "Aguardando lancamento das suspensoes de expediente por portaria " +
+            "Aguardando lancamento das suspensões de expediente por portaria " +
             "e dos feriados estaduais e municipais da praca.",
         },
       });

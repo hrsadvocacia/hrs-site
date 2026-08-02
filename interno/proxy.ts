@@ -11,5 +11,19 @@ const { auth } = NextAuth(authConfig);
 export default auth;
 
 export const config = {
-  matcher: ["/((?!api/auth|entrar|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    /*
+     * Fora da triagem:
+     *   api/auth  — o proprio fluxo de autenticacao;
+     *   entrar    — a tela de login;
+     *   _next     — artefatos de build;
+     *   qualquer caminho com ponto — arquivo estatico servido de public/.
+     *
+     * O ultimo caso importa: sem ele a arte da marca fica atras da sessao e a
+     * TELA DE LOGIN carrega sem o timbrado, que e exatamente onde ele precisa
+     * aparecer. Nenhum arquivo de public/ contem dado de cliente — documento de
+     * processo nao mora ali, e servido por URL assinada de curta duracao.
+     */
+    "/((?!api/auth|entrar|_next|.*\\.).*)",
+  ],
 };

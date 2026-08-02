@@ -13,8 +13,7 @@ export default async function NovoCliente() {
       <main>
         <h1>Novo cliente</h1>
         <p className="legenda">
-          Base legal do tratamento: execucao de contrato (LGPD art. 7, V) e
-          cumprimento de obrigacao legal (art. 7, II).
+          Base legal do tratamento: execução de contrato (LGPD art. 7º, V) e cumprimento de obrigação legal (art. 7º, II).
         </p>
         <FormularioCliente
           acao={criarCliente}

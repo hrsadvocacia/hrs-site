@@ -36,7 +36,7 @@ export default async function NovoProcesso() {
       <main>
         <h1>Novo processo</h1>
         <p className="legenda">
-          Cadastro sob sigilo profissional (art. 34, VII, EAOAB).
+          Cadastro sob sigilo profissional (art. 34, VII, do EAOAB).
         </p>
         <FormularioProcesso
           acao={criarProcesso}

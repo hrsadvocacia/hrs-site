@@ -29,16 +29,16 @@ export function FormularioProcesso({
       {estado.erro && <p className="aviso aviso-erro">{estado.erro}</p>}
 
       <fieldset>
-        <legend>Identificacao</legend>
+        <legend>Identificação</legend>
         <label>
-          <span>Numero unico CNJ</span>
+          <span>Número único CNJ</span>
           <input name="numeroCnj" defaultValue={valorDe("numeroCnj")} placeholder="0000000-00.0000.0.00.0000" required />
           <small>
-            O digito verificador e conferido no cadastro. Numero errado nao casa
-            com publicacao do diario e o processo ficaria sem captura de prazo.
+            O dígito verificador e conferido no cadastro. Número errado não casa
+            com publicação do diario e o processo ficaria sem captura de prazo.
           </small>
           {erroDe("numeroCnj") && (
-            <small style={{ color: "var(--alerta)" }}>{erroDe("numeroCnj")}</small>
+            <small className="erro-campo">{erroDe("numeroCnj")}</small>
           )}
         </label>
 
@@ -53,14 +53,14 @@ export function FormularioProcesso({
             </select>
           </label>
           <label>
-            <span>Orgao julgador</span>
+            <span>Órgão julgador</span>
             <select key={`orgaoJulgadorId-${valorDe("orgaoJulgadorId")}`} name="orgaoJulgadorId" defaultValue={valorDe("orgaoJulgadorId")}>
-              <option value="">Nao informado</option>
+              <option value="">Não informado</option>
               {orgaos.map((o) => (
                 <option key={o.id} value={o.id}>{o.rotulo}</option>
               ))}
             </select>
-            <small>Define os feriados municipais aplicaveis ao prazo.</small>
+            <small>Define os feriados municipais aplicáveis ao prazo.</small>
           </label>
         </div>
 
@@ -68,17 +68,17 @@ export function FormularioProcesso({
           <label>
             <span>Grau</span>
             <select key={`grau-${valorDe("grau")}`} name="grau" defaultValue={valorDe("grau", "PRIMEIRO")}>
-              <option value="PRIMEIRO">1o grau</option>
-              <option value="SEGUNDO">2o grau</option>
+              <option value="PRIMEIRO">1º grau</option>
+              <option value="SEGUNDO">2º grau</option>
               <option value="SUPERIOR">Superior</option>
-              <option value="EXTRAORDINARIO">Extraordinario</option>
+              <option value="EXTRAORDINARIO">Extraordinário</option>
             </select>
           </label>
           <label>
-            <span>Situacao</span>
+            <span>Situação</span>
             <select key={`situacao-${valorDe("situacao")}`} name="situacao" defaultValue={valorDe("situacao", "EM_ANDAMENTO")}>
               <option value="EM_ANDAMENTO">Em andamento</option>
-              <option value="EM_EXECUCAO">Em execucao</option>
+              <option value="EM_EXECUCAO">Em execução</option>
               <option value="SUSPENSO">Suspenso</option>
               <option value="ARQUIVADO">Arquivado</option>
               <option value="BAIXADO">Baixado</option>
@@ -87,7 +87,7 @@ export function FormularioProcesso({
             </select>
           </label>
           <label>
-            <span>Data de distribuicao</span>
+            <span>Data de distribuição</span>
             <input type="date" name="dataDistribuicao" defaultValue={valorDe("dataDistribuicao")} />
           </label>
         </div>
@@ -105,21 +105,21 @@ export function FormularioProcesso({
               ))}
             </select>
             {erroDe("clienteId") && (
-              <small style={{ color: "var(--alerta)" }}>{erroDe("clienteId")}</small>
+              <small className="erro-campo">{erroDe("clienteId")}</small>
             )}
           </label>
           <label>
             <span>Polo do cliente</span>
             <select key={`poloCliente-${valorDe("poloCliente")}`} name="poloCliente" defaultValue={valorDe("poloCliente", "ATIVO")}>
               <option value="ATIVO">Ativo (autor/reclamante)</option>
-              <option value="PASSIVO">Passivo (reu/reclamado)</option>
+              <option value="PASSIVO">Passivo (réu/reclamado)</option>
               <option value="TERCEIRO_INTERESSADO">Terceiro interessado</option>
             </select>
           </label>
         </div>
         <div className="linha">
           <label>
-            <span>Parte contraria</span>
+            <span>Parte contrária</span>
             <input name="parteContraria" defaultValue={valorDe("parteContraria")} />
           </label>
           <label>
@@ -130,7 +130,7 @@ export function FormularioProcesso({
       </fieldset>
 
       <fieldset>
-        <legend>Classificacao e responsabilidade</legend>
+        <legend>Classificação e responsabilidade</legend>
         <div className="linha">
           <label>
             <span>Classe processual</span>
@@ -147,7 +147,7 @@ export function FormularioProcesso({
         </div>
         <div className="linha">
           <label>
-            <span>Advogado responsavel</span>
+            <span>Advogado responsável</span>
             <select key={`advogadoResponsavelId-${valorDe("advogadoResponsavelId")}`} name="advogadoResponsavelId" required defaultValue={valorDe("advogadoResponsavelId", advogadoPadrao)}>
               {advogados.map((a) => (
                 <option key={a.id} value={a.id}>{a.rotulo}</option>
@@ -157,7 +157,7 @@ export function FormularioProcesso({
           <label>
             <span>Unidade</span>
             <select key={`unidade-${valorDe("unidade")}`} name="unidade" defaultValue={valorDe("unidade", unidadePadrao)}>
-              <option value="GOIANIA">Goiania/GO</option>
+              <option value="GOIANIA">Goiânia/GO</option>
               <option value="TERESINA">Teresina/PI</option>
               <option value="TIMON">Timon/MA</option>
             </select>
@@ -165,7 +165,7 @@ export function FormularioProcesso({
         </div>
         <label style={{ display: "flex", gap: ".5rem", alignItems: "center" }}>
           <input type="checkbox" name="segredoJustica" defaultChecked={valorDe("segredoJustica") === "on"} style={{ width: "auto" }} />
-          <span style={{ margin: 0 }}>Processo em segredo de justica</span>
+          <span style={{ margin: 0 }}>Processo em segredo de justiça</span>
         </label>
       </fieldset>
 

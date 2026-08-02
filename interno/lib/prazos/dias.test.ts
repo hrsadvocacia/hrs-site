@@ -20,7 +20,7 @@ describe("validacao de data", () => {
 
   it("recusa formato errado", () => {
     for (const ruim of ["02/03/2026", "2026-3-2", "20260302", "", "hoje"]) {
-      assert.throws(() => validarDataISO(ruim), /Data invalida/, ruim);
+      assert.throws(() => validarDataISO(ruim), /Data inválida/, ruim);
     }
   });
 

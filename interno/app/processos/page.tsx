@@ -3,6 +3,7 @@ import { Cabecalho } from "@/app/cabecalho";
 import { exigirPermissao } from "@/lib/sessao";
 import { prisma } from "@/lib/prisma";
 import { pode } from "@/lib/rbac";
+import { GRAU, SITUACAO_PROCESSO, rotulo } from "@/lib/rotulos";
 
 export const metadata = { title: "Processos — HRS Interno" };
 
@@ -52,7 +53,7 @@ export default async function Processos({
           <input
             name="q"
             defaultValue={busca}
-            placeholder="Buscar por numero CNJ"
+            placeholder="Buscar por número CNJ"
             style={{ maxWidth: 320 }}
           />
           <label style={{ display: "flex", gap: ".4rem", alignItems: "center", margin: 0 }}>
@@ -72,12 +73,12 @@ export default async function Processos({
             <table>
               <thead>
                 <tr>
-                  <th>Numero CNJ</th>
+                  <th>Número CNJ</th>
                   <th>Cliente</th>
                   <th>Tribunal</th>
                   <th>Grau</th>
-                  <th>Situacao</th>
-                  <th>Responsavel</th>
+                  <th>Situação</th>
+                  <th>Responsável</th>
                 </tr>
               </thead>
               <tbody>
@@ -91,8 +92,8 @@ export default async function Processos({
                     </td>
                     <td>{p.partes[0]?.nome ?? "—"}</td>
                     <td>{p.tribunal.sigla}</td>
-                    <td>{p.grau}</td>
-                    <td>{p.situacao}</td>
+                    <td>{rotulo(GRAU, p.grau)}</td>
+                    <td>{rotulo(SITUACAO_PROCESSO, p.situacao)}</td>
                     <td>{p.advogadoResponsavel.nome}</td>
                   </tr>
                 ))}

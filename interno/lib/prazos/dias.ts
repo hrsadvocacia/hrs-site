@@ -15,7 +15,7 @@ const FORMATO = /^\d{4}-\d{2}-\d{2}$/;
 
 export function validarDataISO(data: string): DataISO {
   if (!FORMATO.test(data)) {
-    throw new Error(`Data invalida: "${data}". Use o formato AAAA-MM-DD.`);
+    throw new Error(`Data inválida: "${data}". Use o formato AAAA-MM-DD.`);
   }
   const [ano, mes, dia] = data.split("-").map(Number) as [number, number, number];
   const d = new Date(Date.UTC(ano, mes - 1, dia));
@@ -25,7 +25,7 @@ export function validarDataISO(data: string): DataISO {
     d.getUTCMonth() !== mes - 1 ||
     d.getUTCDate() !== dia
   ) {
-    throw new Error(`Data inexistente no calendario: "${data}".`);
+    throw new Error(`Data inexistente no calendário: "${data}".`);
   }
   return data;
 }

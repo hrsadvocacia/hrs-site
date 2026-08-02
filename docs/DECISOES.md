@@ -242,6 +242,52 @@ Nada aqui foi entregue "provavelmente funcionando":
 
 ---
 
+### D-0.18 — Identidade visual extraída do timbrado, não aproximada
+
+O layout segue o timbrado oficial (`Timbrado_HRS.docx`). A paleta foi
+**amostrada da própria arte**, não escolhida por semelhança:
+
+| Elemento | Cor | Onde aparece no timbrado |
+|---|---|---|
+| Azul institucional | `#3858AB` | texto "ADVOCACIA & CONSULTORIA JURÍDICA" |
+| Azul do rodapé | `#709FDB` | linha de assinatura |
+| Dourado (gradiente) | `#F9E08A` → `#F4CE57` → `#C08A1B` | letras "HRS" e a regra |
+
+A arte da marca é **ativo fixo**: `public/marca/hrs-logo.png` foi recortada do
+próprio `.docx` (com fundo tornado transparente), nunca recriada com fontes.
+
+Estrutura da página espelha a folha timbrada: marca centralizada no topo, regra
+dourada atravessando, navegação discreta abaixo, e o rodapé reproduzindo a
+assinatura na íntegra — "Holanda, Ramalho & Sousa | Advocacia & Consultoria
+Jurídica | Teresina – PI / Timon – MA / Goiânia – GO".
+
+Tipografia Calibri, como no documento, com Carlito de fallback (métrica
+idêntica). **Nenhuma fonte vem de CDN** — chamada a terceiro a partir de tela
+com dado de cliente entregaria padrão de uso a quem não é operador contratado.
+
+Há folha de impressão (`@media print`): a página impressa esconde a navegação e
+fixa o rodapé, virando o timbrado literal.
+
+### D-0.19 — Ortografia e rótulos: correções encontradas na revisão visual
+
+Duas coisas que só apareceram ao olhar as telas:
+
+1. **Texto sem acentuação.** O sistema exibia "fundacao", "publicacoes",
+   "Socio". Inaceitável num escritório cujo próprio timbrado escreve "JURÍDICA"
+   e "Goiânia". Corrigido em todo o texto visível, inclusive nas premissas que o
+   motor de prazos devolve ao advogado.
+2. **Valores de enum crus na tela** — "EM_ANDAMENTO", "PARTE_CONTRARIA",
+   "PRIMEIRO". Identificador de banco não é texto de interface. Criado
+   `lib/rotulos.ts` com um mapa único de rótulos, de modo que lista, ficha e
+   relatório nunca divirjam no nome da mesma coisa.
+
+O script de acentuação quebrou duas coisas que precisaram de conserto: um
+identificador (`usuario` → `usuário`) e um nome de classe CSS (`aviso-atencao`
+→ `aviso-atenção`), este último apagando silenciosamente o destaque de um
+aviso. Ficou a lição: substituição em massa sobre código exige varredura de
+verificação depois — foi ela que pegou os dois. A varredura de classes usadas
+contra as definidas no CSS ficou no processo.
+
 ### Decisões de contagem tomadas pelo escritório (para a Fase 1)
 
 **D-1.1 — Sem prazo em dobro.** O CPC 229, §2º já afasta a dobra por

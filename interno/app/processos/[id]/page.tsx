@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { pode } from "@/lib/rbac";
 import { registrar } from "@/lib/auditoria";
 import { descreverSegmentoCnj } from "@/lib/documentos";
+import { GRAU, POLO, SITUACAO_PROCESSO, TIPO_PARTE, ORIGEM_MOVIMENTACAO, UNIDADE, rotulo } from "@/lib/rotulos";
 
 export const metadata = { title: "Processo — HRS Interno" };
 
@@ -64,17 +65,17 @@ export default async function DetalheProcesso({
         </p>
 
         {processo.segredoJustica && (
-          <p className="aviso aviso-alerta aviso-erro">
-            Processo em segredo de justica. Conteudo restrito.
+          <p className="aviso aviso-erro">
+            Processo em segredo de justiça. Conteudo restrito.
           </p>
         )}
 
         <div className="cartao">
           <div className="linha">
             <div><strong>Segmento</strong><div>{descreverSegmentoCnj(processo.cnjSegmento) ?? "—"}</div></div>
-            <div><strong>Grau</strong><div>{processo.grau}</div></div>
-            <div><strong>Situacao</strong><div>{processo.situacao}</div></div>
-            <div><strong>Responsavel</strong><div>{processo.advogadoResponsavel.nome}</div></div>
+            <div><strong>Grau</strong><div>{rotulo(GRAU, processo.grau)}</div></div>
+            <div><strong>Situação</strong><div>{rotulo(SITUACAO_PROCESSO, processo.situacao)}</div></div>
+            <div><strong>Responsável</strong><div>{processo.advogadoResponsavel.nome}</div></div>
           </div>
           <div className="linha">
             <div><strong>Classe</strong><div>{processo.classeProcessual ?? "—"}</div></div>
@@ -90,7 +91,7 @@ export default async function DetalheProcesso({
                   : "—"}
               </div>
             </div>
-            <div><strong>Unidade</strong><div>{processo.unidade}</div></div>
+            <div><strong>Unidade</strong><div>{rotulo(UNIDADE, processo.unidade)}</div></div>
           </div>
         </div>
 
@@ -110,8 +111,8 @@ export default async function DetalheProcesso({
                       p.nome
                     )}
                   </td>
-                  <td>{p.tipo}</td>
-                  <td>{p.polo}</td>
+                  <td>{rotulo(TIPO_PARTE, p.tipo)}</td>
+                  <td>{rotulo(POLO, p.polo)}</td>
                   <td>{p.advogadoAdverso ?? "—"}</td>
                 </tr>
               ))}
@@ -121,23 +122,23 @@ export default async function DetalheProcesso({
 
         <h2>Prazos</h2>
         <div className="aviso aviso-atencao">
-          Modulo de prazos entra na Fase 1. Ate la, a ausencia de prazo nesta
-          tela nao significa que nao exista prazo em curso.
+          Módulo de prazos entra na Fase 1. Até lá, a ausência de prazo nesta
+          tela não significa que não exista prazo em curso.
         </div>
 
-        <h2>Movimentacoes</h2>
+        <h2>Movimentações</h2>
         {processo.movimentacoes.length === 0 ? (
-          <p className="vazio">Nenhuma movimentacao registrada.</p>
+          <p className="vazio">Nenhuma movimentação registrada.</p>
         ) : (
           <div className="rolagem">
             <table>
-              <thead><tr><th>Data</th><th>Descricao</th><th>Origem</th></tr></thead>
+              <thead><tr><th>Data</th><th>Descrição</th><th>Origem</th></tr></thead>
               <tbody>
                 {processo.movimentacoes.map((m) => (
                   <tr key={m.id}>
                     <td>{m.data.toLocaleDateString("pt-BR")}</td>
                     <td>{m.descricao}</td>
-                    <td>{m.origem}</td>
+                    <td>{rotulo(ORIGEM_MOVIMENTACAO, m.origem)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -148,15 +149,15 @@ export default async function DetalheProcesso({
         {podeVerAnotacoes && (
           <>
             <h2>
-              Estrategia e anotacoes internas{" "}
+              Estratégia e anotações internas{" "}
               <span className="etiqueta etiqueta-alerta">privilegiado</span>
             </h2>
             <p className="legenda">
-              Conteudo protegido por sigilo profissional. Nao sai em nenhum
-              export destinado ao cliente.
+              Conteúdo protegido por sigilo profissional. Não sai em nenhum
+              documento destinado ao cliente.
             </p>
             {anotacoes.length === 0 ? (
-              <p className="vazio">Nenhuma anotacao.</p>
+              <p className="vazio">Nenhuma anotação.</p>
             ) : (
               anotacoes.map((a) => (
                 <div className="cartao" key={a.id}>

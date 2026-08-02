@@ -9,7 +9,7 @@ import { registrar } from "@/lib/auditoria";
 import { analisarCnj } from "@/lib/documentos";
 
 const esquemaProcesso = z.object({
-  numeroCnj: z.string().trim().min(1, "Informe o numero do processo."),
+  numeroCnj: z.string().trim().min(1, "Informe o número do processo."),
   clienteId: z.string().uuid("Selecione o cliente."),
   tribunalId: z.string().uuid("Selecione o tribunal."),
   orgaoJulgadorId: z.string().optional().or(z.literal("")),
@@ -22,7 +22,7 @@ const esquemaProcesso = z.object({
     "EM_ANDAMENTO", "SUSPENSO", "ARQUIVADO", "BAIXADO",
     "EXTINTO", "TRANSITADO_JULGADO", "EM_EXECUCAO",
   ]),
-  advogadoResponsavelId: z.string().uuid("Selecione o advogado responsavel."),
+  advogadoResponsavelId: z.string().uuid("Selecione o advogado responsável."),
   unidade: z.enum(["GOIANIA", "TERESINA", "TIMON"]),
   segredoJustica: z.string().optional().or(z.literal("")),
   dataDistribuicao: z.string().optional().or(z.literal("")),
@@ -69,10 +69,10 @@ export async function criarProcesso(
   const cnj = analisarCnj(d.numeroCnj);
   if (!cnj) {
     return {
-      erro: "Numero CNJ invalido.",
+      erro: "Número CNJ inválido.",
       campos: {
         numeroCnj:
-          "O digito verificador nao confere. Confira a digitacao do numero.",
+          "O dígito verificador não confere. Confira a digitação do número.",
       },
       valores: bruto,
     };
@@ -84,8 +84,8 @@ export async function criarProcesso(
   });
   if (duplicado) {
     return {
-      erro: "Este processo ja esta cadastrado.",
-      campos: { numeroCnj: "Numero ja cadastrado." },
+      erro: "Este processo já esta cadastrado.",
+      campos: { numeroCnj: "Número já cadastrado." },
       valores: bruto,
     };
   }

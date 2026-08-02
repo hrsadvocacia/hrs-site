@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { signOut } from "@/auth";
 import { pode, type Perfil } from "@/lib/rbac";
+import { PERFIL, UNIDADE, rotulo } from "@/lib/rotulos";
 
-const ROTULO_UNIDADE = {
-  GOIANIA: "Goiania/GO",
-  TERESINA: "Teresina/PI",
-  TIMON: "Timon/MA",
-} as const;
-
+/**
+ * Cabecalho no formato do timbrado: a arte da marca centralizada, a regra
+ * dourada que atravessa a folha, e so entao a navegacao. A arte e servida como
+ * imagem recortada do proprio .docx — nunca recriada com fontes.
+ */
 export function Cabecalho({
   nome,
   perfil,
@@ -15,34 +15,42 @@ export function Cabecalho({
 }: {
   nome: string;
   perfil: Perfil;
-  unidade: keyof typeof ROTULO_UNIDADE;
+  unidade: string;
 }) {
-  // A navegacao reflete a mesma matriz de permissoes usada no servidor: o menu
-  // nao oferece caminho que a server action vai recusar depois.
   return (
-    <header className="topo">
-      <span className="marca">HRS</span>
-      <nav>
-        <Link href="/">Painel</Link>
-        {pode(perfil, "cliente", "ler") && <Link href="/clientes">Clientes</Link>}
-        {pode(perfil, "processo", "ler") && <Link href="/processos">Processos</Link>}
-      </nav>
-      <div className="usuario">
-        <div>
-          {nome} — {perfil}
-        </div>
-        <div>{ROTULO_UNIDADE[unidade]}</div>
+    <header className="timbrado">
+      <div className="timbrado-marca">
+        <Link href="/">
+          <img
+            src="/marca/hrs-logo.png"
+            alt="HRS Advocacia &amp; Consultoria Jurídica"
+            width={172}
+            height={87}
+          />
+        </Link>
       </div>
-      <form
-        action={async () => {
-          "use server";
-          await signOut({ redirectTo: "/entrar" });
-        }}
-      >
-        <button className="botao-secundario" style={{ color: "#dbe6f5", borderColor: "#4a6c96" }}>
-          Sair
-        </button>
-      </form>
+      <hr className="regra-ouro" />
+      <div className="barra">
+        {/* A navegacao reflete a mesma matriz de permissoes usada no servidor:
+            o menu nao oferece caminho que a server action vai recusar depois. */}
+        <nav>
+          <Link href="/">Painel</Link>
+          {pode(perfil, "cliente", "ler") && <Link href="/clientes">Clientes</Link>}
+          {pode(perfil, "processo", "ler") && <Link href="/processos">Processos</Link>}
+        </nav>
+        <div className="identificacao">
+          <strong>{nome}</strong>
+          {rotulo(PERFIL, perfil)} &middot; {rotulo(UNIDADE, unidade)}
+        </div>
+        <form
+          action={async () => {
+            "use server";
+            await signOut({ redirectTo: "/entrar" });
+          }}
+        >
+          <button className="botao-secundario">Sair</button>
+        </form>
+      </div>
     </header>
   );
 }

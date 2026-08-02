@@ -33,7 +33,7 @@ export function deBase32(texto: string): Buffer {
   const bytes: number[] = [];
   for (const caractere of limpo) {
     const indice = ALFABETO_B32.indexOf(caractere);
-    if (indice === -1) throw new Error("Segredo base32 invalido.");
+    if (indice === -1) throw new Error("Segredo base32 inválido.");
     valor = (valor << 5) | indice;
     bits += 5;
     if (bits >= 8) {

@@ -31,29 +31,29 @@ export function FormularioCliente({ acao, inicial = {}, id, rotuloBotao }: Props
       {estado.erro && <p className="aviso aviso-erro">{estado.erro}</p>}
 
       <fieldset>
-        <legend>Identificacao</legend>
+        <legend>Identificação</legend>
         <div className="linha">
           <label>
             <span>Tipo de pessoa</span>
             <select key={`tipoPessoa-${valorDe("tipoPessoa")}`} name="tipoPessoa" defaultValue={valorDe("tipoPessoa") || "FISICA"}>
-              <option value="FISICA">Pessoa fisica</option>
-              <option value="JURIDICA">Pessoa juridica</option>
+              <option value="FISICA">Pessoa física</option>
+              <option value="JURIDICA">Pessoa jurídica</option>
             </select>
           </label>
           <label>
             <span>CPF / CNPJ</span>
             <input name="cpfCnpj" defaultValue={valorDe("cpfCnpj")} required />
             {erroDe("cpfCnpj") && (
-              <small style={{ color: "var(--alerta)" }}>{erroDe("cpfCnpj")}</small>
+              <small className="erro-campo">{erroDe("cpfCnpj")}</small>
             )}
           </label>
         </div>
 
         <label>
-          <span>Nome completo / Razao social</span>
+          <span>Nome completo / Razão social</span>
           <input name="nome" defaultValue={valorDe("nome")} required />
           {erroDe("nome") && (
-            <small style={{ color: "var(--alerta)" }}>{erroDe("nome")}</small>
+            <small className="erro-campo">{erroDe("nome")}</small>
           )}
         </label>
 
@@ -79,7 +79,7 @@ export function FormularioCliente({ acao, inicial = {}, id, rotuloBotao }: Props
             <input name="estadoCivil" defaultValue={valorDe("estadoCivil")} />
           </label>
           <label>
-            <span>Profissao</span>
+            <span>Profissão</span>
             <input name="profissao" defaultValue={valorDe("profissao")} />
           </label>
         </div>
@@ -89,12 +89,12 @@ export function FormularioCliente({ acao, inicial = {}, id, rotuloBotao }: Props
         <legend>Origem</legend>
         <div className="linha">
           <label>
-            <span>Como chegou ao escritorio</span>
+            <span>Como chegou ao escritório</span>
             <select key={`origem-${valorDe("origem")}`} name="origem" defaultValue={valorDe("origem") || "BALCAO"}>
-              <option value="INDICACAO">Indicacao</option>
+              <option value="INDICACAO">Indicação</option>
               <option value="SIMULADOR_SITE">Simulador do site</option>
               <option value="REDES_SOCIAIS">Redes sociais</option>
-              <option value="BALCAO">Balcao</option>
+              <option value="BALCAO">Balcão</option>
               <option value="OUTRO">Outro</option>
             </select>
           </label>
@@ -104,9 +104,9 @@ export function FormularioCliente({ acao, inicial = {}, id, rotuloBotao }: Props
             <small>Ex.: quem indicou, qual campanha.</small>
           </label>
           <label>
-            <span>Unidade responsavel</span>
+            <span>Unidade responsável</span>
             <select key={`unidadeResponsavel-${valorDe("unidadeResponsavel")}`} name="unidadeResponsavel" defaultValue={valorDe("unidadeResponsavel") || "GOIANIA"}>
-              <option value="GOIANIA">Goiania/GO</option>
+              <option value="GOIANIA">Goiânia/GO</option>
               <option value="TERESINA">Teresina/PI</option>
               <option value="TIMON">Timon/MA</option>
             </select>
@@ -115,7 +115,7 @@ export function FormularioCliente({ acao, inicial = {}, id, rotuloBotao }: Props
       </fieldset>
 
       <fieldset>
-        <legend>Endereco principal</legend>
+        <legend>Endereço principal</legend>
         <div className="linha">
           <label>
             <span>CEP</span>
@@ -126,7 +126,7 @@ export function FormularioCliente({ acao, inicial = {}, id, rotuloBotao }: Props
             <input name="logradouro" defaultValue={valorDe("logradouro")} />
           </label>
           <label>
-            <span>Numero</span>
+            <span>Número</span>
             <input name="numero" defaultValue={valorDe("numero")} />
           </label>
         </div>
@@ -136,7 +136,7 @@ export function FormularioCliente({ acao, inicial = {}, id, rotuloBotao }: Props
             <input name="bairro" defaultValue={valorDe("bairro")} />
           </label>
           <label>
-            <span>Municipio</span>
+            <span>Município</span>
             <input name="municipio" defaultValue={valorDe("municipio")} />
           </label>
           <label>
@@ -161,19 +161,19 @@ export function FormularioCliente({ acao, inicial = {}, id, rotuloBotao }: Props
             <span>E-mail</span>
             <input type="email" name="email" defaultValue={valorDe("email")} />
             {erroDe("email") && (
-              <small style={{ color: "var(--alerta)" }}>{erroDe("email")}</small>
+              <small className="erro-campo">{erroDe("email")}</small>
             )}
           </label>
         </div>
       </fieldset>
 
       <fieldset>
-        <legend>Observacoes</legend>
+        <legend>Observações</legend>
         <label>
-          <span>Anotacoes de cadastro</span>
+          <span>Anotações de cadastro</span>
           <textarea name="observacoes" defaultValue={valorDe("observacoes")} />
           <small>
-            Dado de saude (laudo, CID) NAO vai aqui: tem cadastro proprio,
+            Dado de saúde (laudo, CID) NAO vai aqui: tem cadastro proprio,
             cifrado e com registro individual de leitura.
           </small>
         </label>

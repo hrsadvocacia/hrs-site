@@ -55,15 +55,15 @@ const REGIMES: Record<RegimeContagem, ConfiguracaoRegime> = {
     suspendeNoRecesso: true,
     inicioNoPrimeiroDiaUtil: true,
     fundamento:
-      "CLT art. 775 (redacao da Lei 13.467/2017) — contagem em dias uteis; " +
-      "suspensao de 20/12 a 20/01 pelo art. 775-A da CLT",
+      "CLT art. 775 (redacao da Lei 13.467/2017) — contagem em dias úteis; " +
+      "suspensão de 20/12 a 20/01 pelo art. 775-A da CLT",
   },
   DIAS_UTEIS_CPC: {
     diasUteis: true,
     suspendeNoRecesso: true,
     inicioNoPrimeiroDiaUtil: true,
     fundamento:
-      "CPC art. 219 — contagem em dias uteis; suspensao de 20/12 a 20/01 " +
+      "CPC art. 219 — contagem em dias úteis; suspensão de 20/12 a 20/01 " +
       "pelo art. 220 do CPC",
   },
   DIAS_CORRIDOS_PENAL: {
@@ -71,8 +71,8 @@ const REGIMES: Record<RegimeContagem, ConfiguracaoRegime> = {
     suspendeNoRecesso: false,
     inicioNoPrimeiroDiaUtil: true,
     fundamento:
-      "CPP art. 798 — prazos continuos e peremptorios, que nao se suspendem " +
-      "no recesso; inicio no primeiro dia util (Sumula 310 do STF)",
+      "CPP art. 798 — prazos contínuos e peremptórios, que não se suspendem " +
+      "no recesso; inicio no primeiro dia útil (Súmula 310 do STF)",
   },
   DIAS_CORRIDOS: {
     diasUteis: false,
@@ -80,7 +80,7 @@ const REGIMES: Record<RegimeContagem, ConfiguracaoRegime> = {
     inicioNoPrimeiroDiaUtil: false,
     fundamento:
       "Prazo material ou administrativo em dias corridos (Lei 9.784/1999, " +
-      "art. 66) — nao se suspende no recesso forense, que e instituto do " +
+      "art. 66) — não se suspende no recesso forense, que e instituto do " +
       "processo judicial",
   },
 };
@@ -129,8 +129,8 @@ function proximoComExpediente(calendario: Calendario, apartirDe: DataISO): DataI
     atual = proximoDia(atual);
   }
   throw new Error(
-    "Nao foi encontrado dia com expediente em 4000 dias. " +
-      "O calendario do tribunal provavelmente esta mal preenchido.",
+    "Não foi encontrado dia com expediente em 4000 dias. " +
+      "O calendário do tribunal provavelmente esta mal preenchido.",
   );
 }
 
@@ -144,7 +144,7 @@ export function calcularPrazo(entrada: EntradaCalculo): ResultadoCalculo {
   }
   if (!entrada.dataDisponibilizacao && !entrada.dataPublicacao) {
     throw new Error(
-      "Informe a data de disponibilizacao ou a data de publicacao.",
+      "Informe a data de disponibilização ou a data de publicação.",
     );
   }
 
@@ -186,8 +186,8 @@ export function calcularPrazo(entrada: EntradaCalculo): ResultadoCalculo {
     );
     if (entrada.dataPublicacao) {
       premissas.push(
-        "Data de publicacao informada manualmente foi ignorada: havendo " +
-          "disponibilizacao, a publicacao e calculada por lei.",
+        "Data de publicação informada manualmente foi ignorada: havendo " +
+          "disponibilização, a publicação e calculada por lei.",
       );
     }
   } else {
@@ -241,7 +241,7 @@ export function calcularPrazo(entrada: EntradaCalculo): ResultadoCalculo {
   while (contados < entrada.prazoDias) {
     if (++iteracoes > LIMITE_ITERACOES) {
       throw new Error(
-        "Contagem excedeu o limite de seguranca. Calendario provavelmente " +
+        "Contagem excedeu o limite de seguranca. Calendário provavelmente " +
           "mal preenchido.",
       );
     }
@@ -282,7 +282,7 @@ export function calcularPrazo(entrada: EntradaCalculo): ResultadoCalculo {
   if (atravessouRecesso) {
     premissas.push(
       "A contagem atravessou o recesso forense (20/12 a 20/01): o curso ficou " +
-        "suspenso e retomou de onde parou, preservando os dias ja decorridos.",
+        "suspenso e retomou de onde parou, preservando os dias já decorridos.",
     );
     recessoAplicado ??= {
       data: inicio,

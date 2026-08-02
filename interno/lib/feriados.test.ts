@@ -53,7 +53,7 @@ describe("feriados moveis", () => {
   it("posiciona corretamente as datas de 2026 (Pascoa em 05/04)", () => {
     const porNome = new Map(feriadosMoveis(2026).map((f) => [f.nome, f.data]));
     assert.equal(porNome.get("Carnaval (segunda-feira)"), "2026-02-16");
-    assert.equal(porNome.get("Carnaval (terca-feira)"), "2026-02-17");
+    assert.equal(porNome.get("Carnaval (terça-feira)"), "2026-02-17");
     assert.equal(porNome.get("Quarta-feira de Cinzas"), "2026-02-18");
     assert.equal(porNome.get("Sexta-feira Santa"), "2026-04-03");
     assert.equal(porNome.get("Corpus Christi"), "2026-06-04");
@@ -76,7 +76,7 @@ describe("feriados moveis", () => {
   it("marca Carnaval e Corpus Christi como dependentes de portaria", () => {
     // Nao sao feriado civil por lei federal: sao ponto facultativo. Tratar como
     // feriado automatico faria o motor contar um dia util a menos sem base.
-    for (const nome of ["Carnaval (terca-feira)", "Corpus Christi", "Quarta-feira de Cinzas"]) {
+    for (const nome of ["Carnaval (terça-feira)", "Corpus Christi", "Quarta-feira de Cinzas"]) {
       const f = feriadosMoveis(2026).find((x) => x.nome === nome)!;
       assert.match(f.fonte, /portaria/i, nome);
     }

@@ -18,10 +18,10 @@ export interface FeriadoNacional {
 
 /** Datas fixas de feriado civil nacional. */
 const FIXOS: ReadonlyArray<{ mes: number; dia: number; nome: string; fonte: string }> = [
-  { mes: 1, dia: 1, nome: "Confraternizacao Universal", fonte: "Lei 662/1949" },
+  { mes: 1, dia: 1, nome: "Confraternização Universal", fonte: "Lei 662/1949" },
   { mes: 4, dia: 21, nome: "Tiradentes", fonte: "Lei 662/1949" },
   { mes: 5, dia: 1, nome: "Dia do Trabalho", fonte: "Lei 662/1949" },
-  { mes: 9, dia: 7, nome: "Independencia do Brasil", fonte: "Lei 662/1949" },
+  { mes: 9, dia: 7, nome: "Independência do Brasil", fonte: "Lei 662/1949" },
   {
     mes: 10,
     dia: 12,
@@ -32,13 +32,13 @@ const FIXOS: ReadonlyArray<{ mes: number; dia: number; nome: string; fonte: stri
   {
     mes: 11,
     dia: 15,
-    nome: "Proclamacao da Republica",
+    nome: "Proclamação da República",
     fonte: "Lei 662/1949",
   },
   {
     mes: 11,
     dia: 20,
-    nome: "Dia Nacional de Zumbi e da Consciencia Negra",
+    nome: "Dia Nacional de Zumbi e da Consciência Negra",
     fonte: "Lei 14.759/2023",
   },
   { mes: 12, dia: 25, nome: "Natal", fonte: "Lei 662/1949" },
@@ -103,7 +103,7 @@ export function feriadosMoveis(ano: number): FeriadoNacional[] {
     },
     {
       data: paraIso(somarDias(pascoa, -47)),
-      nome: "Carnaval (terca-feira)",
+      nome: "Carnaval (terça-feira)",
       fonte: "Ponto facultativo — confirmar portaria do tribunal",
       movel: true,
     },

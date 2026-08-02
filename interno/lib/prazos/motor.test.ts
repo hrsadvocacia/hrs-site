@@ -479,7 +479,7 @@ describe("o motor recusa entrada incoerente em vez de chutar", () => {
           regime: "DIAS_UTEIS_TRABALHISTA",
           calendario: semFeriados,
         }),
-      /disponibilizacao ou a data de publicacao/,
+      /disponibilização ou a data de publicação/,
     );
   });
 
@@ -508,7 +508,7 @@ describe("o motor recusa entrada incoerente em vez de chutar", () => {
           regime: "DIAS_UTEIS_TRABALHISTA",
           calendario: semFeriados,
         }),
-      /Data invalida/,
+      /Data inválida/,
     );
   });
 

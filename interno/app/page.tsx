@@ -40,39 +40,33 @@ export default async function Painel() {
         {/*
           Fase 0 entrega apenas fundacao e cadastro. Os avisos abaixo declaram o
           que AINDA nao existe, para que a ausencia de alerta de prazo nunca
-          seja lida como "nao ha prazo".
+          seja lida como "não ha prazo".
         */}
         <div className="aviso aviso-atencao">
-          <strong>Fase 0 — fundacao.</strong> Controle de prazos, captura de
-          publicacoes e conferencia do Domicilio Judicial Eletronico ainda nao
-          estao ativos. Ate a Fase 2, a conferencia de prazos e publicacoes
+          <strong>Fase 0 — fundação.</strong> Controle de prazos, captura de
+          publicações e conferência do Domicílio Judicial Eletrônico ainda não
+          estão ativos. Até a Fase 2, a conferência de prazos e publicações
           continua sendo feita fora deste sistema, pelo procedimento atual do
-          escritorio.
+          escritório.
         </div>
 
         <div className="grade">
           {podeVerProcessos && (
-            <div className="cartao">
-              <div className="legenda" style={{ margin: 0 }}>
-                Meus processos em andamento
-              </div>
-              <strong style={{ fontSize: "2rem" }}>{meusProcessos}</strong>
+            <div className="indicador">
+              <div className="rotulo">Meus processos em andamento</div>
+              <div className="numero">{meusProcessos}</div>
             </div>
           )}
           {podeVerProcessos && (
-            <div className="cartao">
-              <div className="legenda" style={{ margin: 0 }}>
-                Processos do escritorio
-              </div>
-              <strong style={{ fontSize: "2rem" }}>{processos}</strong>
+            <div className="indicador">
+              <div className="rotulo">Processos do escritório</div>
+              <div className="numero">{processos}</div>
             </div>
           )}
           {podeVerClientes && (
-            <div className="cartao">
-              <div className="legenda" style={{ margin: 0 }}>
-                Clientes ativos
-              </div>
-              <strong style={{ fontSize: "2rem" }}>{clientes}</strong>
+            <div className="indicador">
+              <div className="rotulo">Clientes ativos</div>
+              <div className="numero">{clientes}</div>
             </div>
           )}
         </div>

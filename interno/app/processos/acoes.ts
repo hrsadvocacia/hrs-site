@@ -33,6 +33,8 @@ const esquemaProcesso = z.object({
 export interface EstadoFormulario {
   erro?: string;
   campos?: Record<string, string>;
+  /** O que o usuario havia digitado, devolvido para nao apagar a ficha. */
+  valores?: Record<string, string>;
 }
 
 export async function criarProcesso(
@@ -57,7 +59,7 @@ export async function criarProcesso(
       const chave = String(p.path[0] ?? "");
       if (chave && !campos[chave]) campos[chave] = p.message;
     }
-    return { erro: "Confira os campos destacados.", campos };
+    return { erro: "Confira os campos destacados.", campos, valores: bruto };
   }
   const d = analise.data;
 
@@ -72,6 +74,7 @@ export async function criarProcesso(
         numeroCnj:
           "O digito verificador nao confere. Confira a digitacao do numero.",
       },
+      valores: bruto,
     };
   }
 
@@ -83,6 +86,7 @@ export async function criarProcesso(
     return {
       erro: "Este processo ja esta cadastrado.",
       campos: { numeroCnj: "Numero ja cadastrado." },
+      valores: bruto,
     };
   }
 

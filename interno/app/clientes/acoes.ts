@@ -49,7 +49,19 @@ const esquemaCliente = z.object({
 export interface EstadoFormulario {
   erro?: string;
   campos?: Record<string, string>;
+  /**
+   * O que o usuario havia digitado. Devolvido junto do erro para que o
+   * formulario nao apague uma ficha inteira por causa de um digito errado.
+   */
+  valores?: Record<string, string>;
 }
+
+const CAMPOS_CLIENTE = [
+  "tipoPessoa", "nome", "nomeSocial", "nomeFantasia", "cpfCnpj",
+  "dataNascimento", "estadoCivil", "profissao", "origem", "origemDetalhe",
+  "unidadeResponsavel", "observacoes", "cep", "logradouro", "numero",
+  "bairro", "municipio", "uf", "telefone", "whatsapp", "email",
+] as const;
 
 function opcional(valor: FormDataEntryValue | null): string {
   return String(valor ?? "").trim();
@@ -61,16 +73,10 @@ export async function criarCliente(
 ): Promise<EstadoFormulario> {
   const usuario = await exigirPermissao("cliente", "criar");
 
-  const analise = esquemaCliente.safeParse(
-    Object.fromEntries(
-      [
-        "tipoPessoa", "nome", "nomeSocial", "nomeFantasia", "cpfCnpj",
-        "dataNascimento", "estadoCivil", "profissao", "origem", "origemDetalhe",
-        "unidadeResponsavel", "observacoes", "cep", "logradouro", "numero",
-        "bairro", "municipio", "uf", "telefone", "whatsapp", "email",
-      ].map((campo) => [campo, opcional(dados.get(campo))]),
-    ),
+  const bruto = Object.fromEntries(
+    CAMPOS_CLIENTE.map((campo) => [campo, opcional(dados.get(campo))]),
   );
+  const analise = esquemaCliente.safeParse(bruto);
 
   if (!analise.success) {
     const campos: Record<string, string> = {};
@@ -78,7 +84,7 @@ export async function criarCliente(
       const chave = String(problema.path[0] ?? "");
       if (chave && !campos[chave]) campos[chave] = problema.message;
     }
-    return { erro: "Confira os campos destacados.", campos };
+    return { erro: "Confira os campos destacados.", campos, valores: bruto };
   }
 
   const d = analise.data;
@@ -92,6 +98,7 @@ export async function criarCliente(
     return {
       erro: "Ja existe cliente cadastrado com este CPF/CNPJ.",
       campos: { cpfCnpj: "Documento ja cadastrado." },
+      valores: bruto,
     };
   }
 
@@ -166,16 +173,10 @@ export async function editarCliente(
   const antes = await prisma.cliente.findUnique({ where: { id } });
   if (!antes) return { erro: "Cliente nao encontrado." };
 
-  const analise = esquemaCliente.safeParse(
-    Object.fromEntries(
-      [
-        "tipoPessoa", "nome", "nomeSocial", "nomeFantasia", "cpfCnpj",
-        "dataNascimento", "estadoCivil", "profissao", "origem", "origemDetalhe",
-        "unidadeResponsavel", "observacoes", "cep", "logradouro", "numero",
-        "bairro", "municipio", "uf", "telefone", "whatsapp", "email",
-      ].map((campo) => [campo, opcional(dados.get(campo))]),
-    ),
+  const bruto = Object.fromEntries(
+    CAMPOS_CLIENTE.map((campo) => [campo, opcional(dados.get(campo))]),
   );
+  const analise = esquemaCliente.safeParse(bruto);
 
   if (!analise.success) {
     const campos: Record<string, string> = {};
@@ -183,7 +184,7 @@ export async function editarCliente(
       const chave = String(problema.path[0] ?? "");
       if (chave && !campos[chave]) campos[chave] = problema.message;
     }
-    return { erro: "Confira os campos destacados.", campos };
+    return { erro: "Confira os campos destacados.", campos, valores: bruto };
   }
 
   const d = analise.data;

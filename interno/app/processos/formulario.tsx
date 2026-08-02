@@ -20,6 +20,9 @@ export function FormularioProcesso({
 }: Props) {
   const [estado, enviar, pendente] = useActionState<EstadoFormulario, FormData>(acao, {});
   const erroDe = (campo: string) => estado.campos?.[campo];
+  // Depois de um erro, o formulario devolve o que foi digitado em vez de zerar
+  // a ficha inteira por causa de um digito errado no numero do processo.
+  const valorDe = (campo: string, padrao = "") => estado.valores?.[campo] ?? padrao;
 
   return (
     <form className="formulario" action={enviar}>
@@ -29,7 +32,7 @@ export function FormularioProcesso({
         <legend>Identificacao</legend>
         <label>
           <span>Numero unico CNJ</span>
-          <input name="numeroCnj" placeholder="0000000-00.0000.0.00.0000" required />
+          <input name="numeroCnj" defaultValue={valorDe("numeroCnj")} placeholder="0000000-00.0000.0.00.0000" required />
           <small>
             O digito verificador e conferido no cadastro. Numero errado nao casa
             com publicacao do diario e o processo ficaria sem captura de prazo.
@@ -42,7 +45,7 @@ export function FormularioProcesso({
         <div className="linha">
           <label>
             <span>Tribunal</span>
-            <select name="tribunalId" required defaultValue="">
+            <select key={`tribunalId-${valorDe("tribunalId")}`} name="tribunalId" required defaultValue={valorDe("tribunalId")}>
               <option value="" disabled>Selecione</option>
               {tribunais.map((t) => (
                 <option key={t.id} value={t.id}>{t.rotulo}</option>
@@ -51,7 +54,7 @@ export function FormularioProcesso({
           </label>
           <label>
             <span>Orgao julgador</span>
-            <select name="orgaoJulgadorId" defaultValue="">
+            <select key={`orgaoJulgadorId-${valorDe("orgaoJulgadorId")}`} name="orgaoJulgadorId" defaultValue={valorDe("orgaoJulgadorId")}>
               <option value="">Nao informado</option>
               {orgaos.map((o) => (
                 <option key={o.id} value={o.id}>{o.rotulo}</option>
@@ -64,7 +67,7 @@ export function FormularioProcesso({
         <div className="linha">
           <label>
             <span>Grau</span>
-            <select name="grau" defaultValue="PRIMEIRO">
+            <select key={`grau-${valorDe("grau")}`} name="grau" defaultValue={valorDe("grau", "PRIMEIRO")}>
               <option value="PRIMEIRO">1o grau</option>
               <option value="SEGUNDO">2o grau</option>
               <option value="SUPERIOR">Superior</option>
@@ -73,7 +76,7 @@ export function FormularioProcesso({
           </label>
           <label>
             <span>Situacao</span>
-            <select name="situacao" defaultValue="EM_ANDAMENTO">
+            <select key={`situacao-${valorDe("situacao")}`} name="situacao" defaultValue={valorDe("situacao", "EM_ANDAMENTO")}>
               <option value="EM_ANDAMENTO">Em andamento</option>
               <option value="EM_EXECUCAO">Em execucao</option>
               <option value="SUSPENSO">Suspenso</option>
@@ -85,7 +88,7 @@ export function FormularioProcesso({
           </label>
           <label>
             <span>Data de distribuicao</span>
-            <input type="date" name="dataDistribuicao" />
+            <input type="date" name="dataDistribuicao" defaultValue={valorDe("dataDistribuicao")} />
           </label>
         </div>
       </fieldset>
@@ -95,7 +98,7 @@ export function FormularioProcesso({
         <div className="linha">
           <label>
             <span>Cliente</span>
-            <select name="clienteId" required defaultValue="">
+            <select key={`clienteId-${valorDe("clienteId")}`} name="clienteId" required defaultValue={valorDe("clienteId")}>
               <option value="" disabled>Selecione</option>
               {clientes.map((c) => (
                 <option key={c.id} value={c.id}>{c.rotulo}</option>
@@ -107,7 +110,7 @@ export function FormularioProcesso({
           </label>
           <label>
             <span>Polo do cliente</span>
-            <select name="poloCliente" defaultValue="ATIVO">
+            <select key={`poloCliente-${valorDe("poloCliente")}`} name="poloCliente" defaultValue={valorDe("poloCliente", "ATIVO")}>
               <option value="ATIVO">Ativo (autor/reclamante)</option>
               <option value="PASSIVO">Passivo (reu/reclamado)</option>
               <option value="TERCEIRO_INTERESSADO">Terceiro interessado</option>
@@ -117,11 +120,11 @@ export function FormularioProcesso({
         <div className="linha">
           <label>
             <span>Parte contraria</span>
-            <input name="parteContraria" />
+            <input name="parteContraria" defaultValue={valorDe("parteContraria")} />
           </label>
           <label>
             <span>Advogado adverso</span>
-            <input name="advogadoAdverso" />
+            <input name="advogadoAdverso" defaultValue={valorDe("advogadoAdverso")} />
           </label>
         </div>
       </fieldset>
@@ -131,21 +134,21 @@ export function FormularioProcesso({
         <div className="linha">
           <label>
             <span>Classe processual</span>
-            <input name="classeProcessual" />
+            <input name="classeProcessual" defaultValue={valorDe("classeProcessual")} />
           </label>
           <label>
             <span>Assunto</span>
-            <input name="assunto" />
+            <input name="assunto" defaultValue={valorDe("assunto")} />
           </label>
           <label>
             <span>Valor da causa</span>
-            <input name="valorCausa" inputMode="decimal" placeholder="0,00" />
+            <input name="valorCausa" defaultValue={valorDe("valorCausa")} inputMode="decimal" placeholder="0,00" />
           </label>
         </div>
         <div className="linha">
           <label>
             <span>Advogado responsavel</span>
-            <select name="advogadoResponsavelId" required defaultValue={advogadoPadrao}>
+            <select key={`advogadoResponsavelId-${valorDe("advogadoResponsavelId")}`} name="advogadoResponsavelId" required defaultValue={valorDe("advogadoResponsavelId", advogadoPadrao)}>
               {advogados.map((a) => (
                 <option key={a.id} value={a.id}>{a.rotulo}</option>
               ))}
@@ -153,7 +156,7 @@ export function FormularioProcesso({
           </label>
           <label>
             <span>Unidade</span>
-            <select name="unidade" defaultValue={unidadePadrao}>
+            <select key={`unidade-${valorDe("unidade")}`} name="unidade" defaultValue={valorDe("unidade", unidadePadrao)}>
               <option value="GOIANIA">Goiania/GO</option>
               <option value="TERESINA">Teresina/PI</option>
               <option value="TIMON">Timon/MA</option>
@@ -161,7 +164,7 @@ export function FormularioProcesso({
           </label>
         </div>
         <label style={{ display: "flex", gap: ".5rem", alignItems: "center" }}>
-          <input type="checkbox" name="segredoJustica" style={{ width: "auto" }} />
+          <input type="checkbox" name="segredoJustica" defaultChecked={valorDe("segredoJustica") === "on"} style={{ width: "auto" }} />
           <span style={{ margin: 0 }}>Processo em segredo de justica</span>
         </label>
       </fieldset>

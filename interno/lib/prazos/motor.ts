@@ -55,7 +55,7 @@ const REGIMES: Record<RegimeContagem, ConfiguracaoRegime> = {
     suspendeNoRecesso: true,
     inicioNoPrimeiroDiaUtil: true,
     fundamento:
-      "CLT art. 775 (redacao da Lei 13.467/2017) — contagem em dias úteis; " +
+      "CLT art. 775 (redação da Lei 13.467/2017) — contagem em dias úteis; " +
       "suspensão de 20/12 a 20/01 pelo art. 775-A da CLT",
   },
   DIAS_UTEIS_CPC: {
@@ -80,7 +80,7 @@ const REGIMES: Record<RegimeContagem, ConfiguracaoRegime> = {
     inicioNoPrimeiroDiaUtil: false,
     fundamento:
       "Prazo material ou administrativo em dias corridos (Lei 9.784/1999, " +
-      "art. 66) — não se suspende no recesso forense, que e instituto do " +
+      "art. 66) — não se suspende no recesso forense, que é instituto do " +
       "processo judicial",
   },
 };
@@ -130,7 +130,7 @@ function proximoComExpediente(calendario: Calendario, apartirDe: DataISO): DataI
   }
   throw new Error(
     "Não foi encontrado dia com expediente em 4000 dias. " +
-      "O calendário do tribunal provavelmente esta mal preenchido.",
+      "O calendário do tribunal provavelmente está mal preenchido.",
   );
 }
 
@@ -178,23 +178,23 @@ export function calcularPrazo(entrada: EntradaCalculo): ResultadoCalculo {
       proximoDia(disponibilizacao),
     );
     premissas.push(
-      `Disponibilizado no diario eletronico em ${formatarBR(disponibilizacao)}.`,
+      `Disponibilizado no diário eletrônico em ${formatarBR(disponibilizacao)}.`,
     );
     premissas.push(
-      `Considera-se publicado em ${formatarBR(publicacao)}, primeiro dia util ` +
-        `seguinte a disponibilizacao (Lei 11.419/2006, art. 4o, 3o).`,
+      `Considera-se publicado em ${formatarBR(publicacao)}, primeiro dia útil ` +
+        `seguinte ao da disponibilização (Lei 11.419/2006, art. 4º, § 3º).`,
     );
     if (entrada.dataPublicacao) {
       premissas.push(
         "Data de publicação informada manualmente foi ignorada: havendo " +
-          "disponibilização, a publicação e calculada por lei.",
+          "disponibilização, a publicação é calculada por lei.",
       );
     }
   } else {
     publicacao = validarDataISO(entrada.dataPublicacao!);
     premissas.push(
-      `Ciencia considerada em ${formatarBR(publicacao)} (informada, sem ` +
-        `disponibilizacao em diario).`,
+      `Ciência considerada em ${formatarBR(publicacao)} (informada, sem ` +
+        `disponibilização em diário).`,
     );
   }
 
@@ -203,14 +203,14 @@ export function calcularPrazo(entrada: EntradaCalculo): ResultadoCalculo {
   if (config.inicioNoPrimeiroDiaUtil) {
     inicio = proximoComExpediente(entrada.calendario, proximoDia(publicacao));
     premissas.push(
-      `Contagem iniciada em ${formatarBR(inicio)}, primeiro dia util seguinte ` +
-        `ao da publicacao (exclui-se o dia do comeco).`,
+      `Contagem iniciada em ${formatarBR(inicio)}, primeiro dia útil seguinte ` +
+        `ao da publicação (exclui-se o dia do começo).`,
     );
   } else {
     inicio = proximoDia(publicacao);
     premissas.push(
-      `Contagem iniciada em ${formatarBR(inicio)}, dia seguinte a ciencia ` +
-        `(exclui-se o dia do comeco; prazo em dias corridos nao aguarda dia util).`,
+      `Contagem iniciada em ${formatarBR(inicio)}, dia seguinte à ciência ` +
+        `(exclui-se o dia do começo; prazo em dias corridos não aguarda dia útil).`,
     );
   }
 
@@ -220,8 +220,8 @@ export function calcularPrazo(entrada: EntradaCalculo): ResultadoCalculo {
     const retomada = primeiroDiaAposRecesso(inicio);
     const novoInicio = proximoComExpediente(entrada.calendario, retomada);
     premissas.push(
-      `Inicio adiado para ${formatarBR(novoInicio)}: o termo inicial cairia ` +
-        `dentro do recesso forense (20/12 a 20/01), quando o prazo esta suspenso.`,
+      `Início adiado para ${formatarBR(novoInicio)}: o termo inicial cairia ` +
+        `dentro do recesso forense (20/12 a 20/01), quando o prazo está suspenso.`,
     );
     recessoAplicado = {
       data: inicio,
@@ -241,7 +241,7 @@ export function calcularPrazo(entrada: EntradaCalculo): ResultadoCalculo {
   while (contados < entrada.prazoDias) {
     if (++iteracoes > LIMITE_ITERACOES) {
       throw new Error(
-        "Contagem excedeu o limite de seguranca. Calendário provavelmente " +
+        "Contagem excedeu o limite de segurança. Calendário provavelmente " +
           "mal preenchido.",
       );
     }
@@ -303,15 +303,15 @@ export function calcularPrazo(entrada: EntradaCalculo): ResultadoCalculo {
     const prorrogado = proximoComExpediente(entrada.calendario, fatal);
     premissas.push(
       `Vencimento prorrogado de ${formatarBR(fatal)} para ` +
-        `${formatarBR(prorrogado)}: o ultimo dia nao teve expediente forense.`,
+        `${formatarBR(prorrogado)}: o último dia não teve expediente forense.`,
     );
     fatal = prorrogado;
   }
 
   premissas.push(
     config.diasUteis
-      ? `Foram contados ${contados} dias uteis ate ${formatarBR(fatal)}.`
-      : `Foram contados ${contados} dias corridos ate ${formatarBR(fatal)}.`,
+      ? `Foram contados ${contados} dias úteis até ${formatarBR(fatal)}.`
+      : `Foram contados ${contados} dias corridos até ${formatarBR(fatal)}.`,
   );
 
   return {

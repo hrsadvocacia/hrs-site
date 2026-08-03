@@ -141,6 +141,20 @@ describe("auditoria", () => {
   });
 });
 
+describe("calendário forense", () => {
+  it("é mantido por SOCIO e ADMIN", () => {
+    const mantem = PERFIS.filter((p) => pode(p, "calendario", "editar"));
+    assert.deepEqual(mantem, ["SOCIO", "ADMIN"]);
+  });
+
+  it("advogado e estagiário consultam mas não alteram", () => {
+    for (const perfil of ["ADVOGADO", "ESTAGIARIO"] as const) {
+      assert.equal(pode(perfil, "calendario", "ler"), true, perfil);
+      assert.equal(pode(perfil, "calendario", "editar"), false, perfil);
+    }
+  });
+});
+
 describe("relatorio do socio", () => {
   it("e exclusivo do socio", () => {
     const acessam = PERFIS.filter((p) => pode(p, "relatorioSocio", "ler"));

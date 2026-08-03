@@ -116,7 +116,7 @@ export function feriadosMoveis(ano: number): FeriadoNacional[] {
     {
       data: paraIso(somarDias(pascoa, -2)),
       nome: "Sexta-feira Santa",
-      fonte: "Feriado religioso de observancia nacional",
+      fonte: "Feriado religioso de observância nacional",
       movel: true,
     },
     {

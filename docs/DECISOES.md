@@ -310,3 +310,60 @@ mas o fundamento legal exibido ao advogado é diferente.
 
 O comportamento no recesso ficou amarrado ao `RegimeContagem`, com o fundamento
 de cada caso documentado no próprio enum — e não como regra implícita no motor.
+
+---
+
+## Fase 1 — Prazos
+
+### D-1.4 — O cálculo é RECUSADO sobre calendário em rascunho
+
+`calcularParaProcesso` exige `CalendarioTribunal` com status `VIGENTE`. Enquanto
+as portarias não forem lançadas e o calendário não for aprovado, o sistema se
+recusa a calcular e diz por quê.
+
+É a decisão mais importante desta fase. Produzir uma data a partir de calendário
+não conferido seria entregar um número com **aparência de fundamento** — pior
+que não entregar nada, porque o advogado confiaria nele.
+
+### D-1.5 — Sócio mantém o calendário, não só o administrador
+
+Correção ao RBAC da Fase 0. Quem conhece as portarias do tribunal é advogado.
+Deixar a manutenção do calendário apenas com o perfil `ADMIN` colocaria um leigo
+decidindo o que suspende expediente — decisão com consequência de prazo.
+
+Calendário vigente **não se edita**: cria-se nova versão, e a anterior vira
+`SUBSTITUIDO` em vez de sumir, porque prazos já calculados apontam para ela e
+precisam continuar reconstituíveis.
+
+### D-1.6 — Alertas: o marco mais próximo, não a fila inteira
+
+Se o cron ficar dois dias fora do ar, o advogado recebe "faltam 3 dias" — e não
+uma enxurrada de D-10 e D-5 já superados, que confunde mais do que informa. O
+que ficou para trás continua visível no painel.
+
+Escalonamento ao sócio a partir de D-3 sem tratativa registrada, como alerta
+**adicional**: o responsável continua recebendo o dele, porque escalar não é
+substituir.
+
+Idempotência pela chave única `(prazo, marco, canal, destinatário)` — o cron da
+Vercel não garante execução exatamente-uma-vez.
+
+### D-1.7 — Prazo vencido sem baixa não sai da tela
+
+O sistema não encerra prazo sozinho. Data ultrapassada sem cumprimento nem
+cancelamento registrados vira bloco vermelho no topo do painel, separado da
+lista geral: no meio da rotina, passaria despercebido.
+
+Do mesmo modo, `PENDENTE_CONFERENCIA` nunca é exibido como "normal", ainda que
+falte muito tempo — prazo capturado e não conferido não é prazo controlado, e
+mostrá-lo como rotina daria falsa sensação de controle.
+
+### D-1.8 — Bug encontrado ao exercitar: o cron nunca rodaria
+
+O `proxy` de autenticação interceptava `/api/cron/*` e devolvia redirecionamento
+para a tela de login. O job da Vercel receberia um 307 e **falharia em silêncio
+todos os dias** — exatamente o modo de falha que este sistema não pode ter.
+
+Descoberto porque o endpoint foi chamado de verdade, não porque compilava. O
+cron agora se autentica por `CRON_SECRET` no cabeçalho e está fora da triagem
+de sessão; a recusa por segredo ausente ou errado foi verificada (401).

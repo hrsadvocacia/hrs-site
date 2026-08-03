@@ -34,7 +34,7 @@ const TRIBUNAIS = [
   { codigo: "TJGO", sigla: "TJGO", nome: "Tribunal de Justiça do Estado de Goiás", ramo: "ESTADUAL", uf: "GO", regime: "DIAS_UTEIS_CPC" },
   { codigo: "TJPI", sigla: "TJPI", nome: "Tribunal de Justiça do Estado do Piauí", ramo: "ESTADUAL", uf: "PI", regime: "DIAS_UTEIS_CPC" },
   { codigo: "TJMA", sigla: "TJMA", nome: "Tribunal de Justiça do Estado do Maranhão", ramo: "ESTADUAL", uf: "MA", regime: "DIAS_UTEIS_CPC" },
-  { codigo: "STJ", sigla: "STJ", nome: "Superior Tribunal de Justica", ramo: "SUPERIOR", uf: null, regime: "DIAS_UTEIS_CPC" },
+  { codigo: "STJ", sigla: "STJ", nome: "Superior Tribunal de Justiça", ramo: "SUPERIOR", uf: null, regime: "DIAS_UTEIS_CPC" },
 ] as const;
 
 /** Orgaos das tres pracas onde o escritorio atua. O MUNICIPIO importa: e ele
@@ -44,7 +44,7 @@ const ORGAOS: ReadonlyArray<{ tribunal: string; nome: string; municipio: string;
   { tribunal: "TRT18", nome: "Vara do Trabalho de Anápolis", municipio: "Anápolis", uf: "GO" },
   { tribunal: "TRT22", nome: "Varas do Trabalho de Teresina", municipio: "Teresina", uf: "PI" },
   { tribunal: "TRT16", nome: "Vara do Trabalho de Timon", municipio: "Timon", uf: "MA" },
-  { tribunal: "TRT16", nome: "Varas do Trabalho de Sao Luis", municipio: "São Luís", uf: "MA" },
+  { tribunal: "TRT16", nome: "Varas do Trabalho de São Luís", municipio: "São Luís", uf: "MA" },
   { tribunal: "TJGO", nome: "Comarca de Goiânia", municipio: "Goiânia", uf: "GO" },
   { tribunal: "TJPI", nome: "Comarca de Teresina", municipio: "Teresina", uf: "PI" },
   { tribunal: "TJMA", nome: "Comarca de Timon", municipio: "Timon", uf: "MA" },

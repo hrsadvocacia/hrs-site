@@ -50,7 +50,10 @@ export const MATRIZ_PERMISSOES: Matriz = {
     dadoSensivel: ["ler", "criar", "editar"],
     prazo: TODAS,
     publicacao: TODAS,
-    calendario: LEITURA,
+    // O socio mantem o calendario. Quem conhece as portarias do tribunal e
+    // advogado, nao administrador de sistema — deixar isso so com o ADMIN
+    // colocaria um leigo decidindo o que suspende expediente.
+    calendario: TODAS,
     agenda: TODAS,
     atendimento: TODAS,
     financeiro: TODAS,

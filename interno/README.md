@@ -94,11 +94,25 @@ cliente não decifra. Cada leitura é registrada individualmente em
 | Fase | Situação |
 |---|---|
 | 0 — Fundação | **Entregue**: schema, migrations, auth com 2FA, RBAC, auditoria, CRUD de clientes e processos, seed |
-| 1 — Prazos manuais | Não iniciada |
+| 1 — Prazos manuais | **Entregue**: motor de contagem, calendário por tribunal, cadastro e conferência de prazo, alertas escalonados, painel |
 | 2 — Captura DJEN | Não iniciada |
 | 3 — Honorários e contato | Não iniciada |
 | 4 — Portal do cliente | Não iniciada |
 
-Até a Fase 2, **a conferência de prazos e publicações continua sendo feita fora
-deste sistema**, pelo procedimento atual do escritório. O painel diz isso em
-tela, para que a ausência de alerta nunca seja lida como ausência de prazo.
+Até a Fase 2 **não há captura automática de publicações**: todo prazo é lançado
+à mão. O painel diz isso em tela, para que a ausência de alerta nunca seja lida
+como ausência de prazo.
+
+### Antes de usar o módulo de prazos em produção
+
+O cálculo é **recusado** enquanto o calendário do tribunal estiver em rascunho.
+Para liberá-lo, um sócio precisa, em **Calendários**, lançar as suspensões de
+expediente por portaria e os feriados estaduais e municipais da praça (lista em
+`docs/CALENDARIO.md`) e aprovar a versão. Sem isso, o sistema se recusa a
+calcular e diz por quê — é deliberado: data sobre calendário não conferido é
+número com aparência de fundamento.
+
+### Variáveis adicionais
+
+`CRON_SECRET` — segredo que autentica o job diário de alertas
+(`/api/cron/alertas`, agendado em `vercel.json` para 11h UTC / 8h em Brasília).

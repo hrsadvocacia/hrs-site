@@ -95,7 +95,7 @@ cliente não decifra. Cada leitura é registrada individualmente em
 |---|---|
 | 0 — Fundação | **Entregue**: schema, migrations, auth com 2FA, RBAC, auditoria, CRUD de clientes e processos, seed |
 | 1 — Prazos manuais | **Entregue**: motor de contagem, calendário por tribunal, cadastro e conferência de prazo, alertas escalonados, painel |
-| 2 — Captura DJEN | Não iniciada |
+| 2 — Captura DJEN | **Parcial**: interface de fontes, deduplicação, triagem, vigilância da captura, checklist do Domicílio e lançamento manual entregues. O adaptador do DJEN aguarda verificação do contrato da API (ver `docs/DECISOES.md`, D-2.1) |
 | 3 — Honorários e contato | Não iniciada |
 | 4 — Portal do cliente | Não iniciada |
 

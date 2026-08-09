@@ -37,7 +37,13 @@ export function Cabecalho({
           <Link href="/">Painel</Link>
           {pode(perfil, "cliente", "ler") && <Link href="/clientes">Clientes</Link>}
           {pode(perfil, "prazo", "ler") && <Link href="/prazos">Prazos</Link>}
+          {pode(perfil, "publicacao", "ler") && (
+            <Link href="/publicacoes">Publicações</Link>
+          )}
           {pode(perfil, "processo", "ler") && <Link href="/processos">Processos</Link>}
+          {pode(perfil, "publicacao", "ler") && (
+            <Link href="/domicilio">Domicílio</Link>
+          )}
           {pode(perfil, "calendario", "editar") && (
             <Link href="/calendarios">Calendários</Link>
           )}

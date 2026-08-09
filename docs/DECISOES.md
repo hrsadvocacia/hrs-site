@@ -367,3 +367,84 @@ todos os dias** — exatamente o modo de falha que este sistema não pode ter.
 Descoberto porque o endpoint foi chamado de verdade, não porque compilava. O
 cron agora se autentica por `CRON_SECRET` no cabeçalho e está fora da triagem
 de sessão; a recusa por segredo ausente ou errado foi verificada (401).
+
+---
+
+## Fase 2 — Captura (parcial)
+
+### D-2.1 — BLOQUEIO: o contrato do DJEN não pôde ser verificado
+
+A política de rede deste ambiente recusa a saída para `comunicaapi.pje.jus.br`
+(403 no CONNECT do proxy; só o GitHub está liberado). Sem uma resposta real, o
+mapeamento do payload seria suposição.
+
+**O adaptador foi escrito até onde é verificável e para ali.** `montarUrl` está
+pronto e testado; `mapear` lança `ContratoNaoVerificadoError` — e há um teste
+que TRAVA essa ausência, de modo que escrever um mapeamento por suposição
+quebra a suíte e força a conversa sobre de onde veio o contrato.
+
+Motivo: um mapeamento inventado compila, passa em teste com dado fabricado e,
+em produção, silenciosamente não casa nenhum processo. Prazos deixariam de ser
+capturados sem que nada acusasse erro — o pior modo de falha deste sistema.
+
+Para concluir: obter a resposta crua (instruções no cabeçalho de
+`lib/publicacoes/djen.ts`), escrever `mapear` a partir dos campos observados,
+guardar a amostra e escrever um teste de contrato sobre ela.
+
+### D-2.2 — Falha nunca vira "nenhuma publicação"
+
+`FontePublicacao.consultar` **lança** em qualquer dúvida — rede fora, HTTP não
+2xx, JSON inválido, contrato não verificado. Devolver lista vazia diante de uma
+resposta que não se entendeu transformaria falha em "não há publicações", que é
+exatamente o desfecho que faz perder prazo sem ninguém perceber.
+
+Verificado com o cron real: as três inscrições registraram FALHA com a razão
+(`[DJEN] A consulta respondeu 403.`), e nenhuma reportou ausência de publicações.
+
+### D-2.3 — A ausência é detectada comparando esperado com observado
+
+`captura_diaria` é aberta em PENDENTE **antes** da consulta. Um desenho que só
+grava resultado não distingue "rodou e não havia nada" de "não rodou" — e um
+cron que parou de disparar não escreve log de erro nenhum.
+
+`pendenciasDeCaptura` percorre os dias úteis esperados e cobra cada inscrição.
+Linha faltando, presa em PENDENTE, em FALHA, ou concluída sem publicações e sem
+confirmação humana: tudo aparece em vermelho.
+
+### D-2.4 — Homônimo prevalece sobre vinculação automática
+
+Nome do escritório com OAB que não confere vira `SUSPEITA_HOMONIMO` mesmo
+quando o CNJ casa com processo nosso. O processo provável fica registrado para
+agilizar a decisão, mas a publicação não entra como vinculada: criar prazo num
+caso que não é do escritório é tão ruim quanto perder um prazo.
+
+### D-2.5 — Deduplicação normaliza o teor antes do hash
+
+A mesma comunicação volta da fonte com espaçamento e quebra de linha
+diferentes. Hash sobre o teor com espaços colapsados e Unicode em NFC. Órfã
+(sem número de processo) é o caso que mais se repete e é justamente onde a
+deduplicação ingênua falha — por isso o `NULLS NOT DISTINCT` do D-0.7.
+
+### D-2.6 — Domicílio Judicial: controle humano, e assumido como tal
+
+Não há integração, e a tela diz isso em letras grandes. Citação e intimação com
+exigência de pessoalidade correm por lá e não aparecem no DJEN. O sistema
+registra o ato humano de conferir e, sobretudo, torna visível o dia em que
+ninguém conferiu. Alerta acima de um dia útil de atraso.
+
+O formulário propõe o último DIA ÚTIL, não "hoje": confirmar num sábado
+registraria um dia que a vigilância não cobra, o contador não baixaria e o
+usuário concluiria, com razão, que o sistema está quebrado.
+
+### D-2.7 — Alerta que vira parede de texto deixa de ser lido
+
+Dez dias sem captura para três inscrições produziam trinta linhas idênticas na
+tela. `resumirPendencias` agrupa por inscrição: "captura desta OAB parada há 10
+dias úteis, de 27/07 a 07/08". O aviso que não pode passar despercebido é
+justamente o que não pode ser cansativo de ler.
+
+### O que falta na Fase 2
+
+- `mapear` do DJEN, quando houver payload real;
+- adaptador do DEJT como fonte de conferência;
+- ligar o cron de captura em horário fixo (depende do plano Vercel, D-0.4).

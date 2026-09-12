@@ -53,6 +53,10 @@ model Usuario {
 
   senhaHash         String
   senhaAtualizadaEm DateTime @default(now())
+  /// Senha temporária (criação de conta, redefinição pelo ADMIN) obriga troca
+  /// no primeiro acesso: o sistema não aceita sessão útil com senha que outra
+  /// pessoa conheceu.
+  exigeTrocaSenha   Boolean  @default(true)
 
   // 2FA TOTP obrigatorio para todos os perfis. O segredo e cifrado na aplicacao
   // (AES-256-GCM); `totpVersaoChave` permite rotacao da chave mestra sem
@@ -95,12 +99,13 @@ model Usuario {
   calendariosRevisados CalendarioTribunal[]     @relation("CalendarioRevisadoPor")
   revisoesConcluidas   RevisaoAnualCalendario[]
 
-  compromissos        Compromisso[]
-  documentosEnviados  Documento[]
-  templatesCriados    TemplateMensagem[]
-  mensagensEnviadas   EnvioMensagem[]
-  acessosDadoSensivel AcessoDadoSensivel[]
-  leadsAtribuidos     Lead[]               @relation("LeadResponsavel")
+  compromissos         Compromisso[]
+  documentosEnviados   Documento[]
+  templatesCriados     TemplateMensagem[]
+  mensagensEnviadas    EnvioMensagem[]
+  acessosDadoSensivel  AcessoDadoSensivel[]
+  leadsAtribuidos      Lead[]               @relation("LeadResponsavel")
+  acessosPortalCriados AcessoPortal[]       @relation("AcessoPortalCriadoPor")
 
   @@index([perfil, ativo])
   @@index([unidade])
@@ -175,6 +180,8 @@ enum AcaoAuditoria {
   TRIAGEM_PUBLICACAO
   ENVIO_MENSAGEM
   ALTERACAO_PERMISSAO
+  ANONIMIZACAO
+  ACESSO_PORTAL
 }
 
 model Auditoria {
@@ -254,6 +261,7 @@ model Cliente {
   documentos     Documento[]
   mensagens      EnvioMensagem[]
   lead           Lead?
+  acessosPortal  AcessoPortal[]
 
   @@index([nome])
   @@index([unidadeResponsavel, ativo])
@@ -1408,9 +1416,50 @@ model Documento {
 
   criadoEm DateTime @default(now())
 
-  comprovanteDe Parcela[] @relation("ComprovanteParcela")
+  comprovanteDe Parcela[]          @relation("ComprovanteParcela")
+  conteudo      DocumentoConteudo?
 
   @@index([processoId])
   @@index([clienteId])
   @@map("documento")
+}
+
+/// Conteúdo do arquivo, cifrado na aplicação (AES-256-GCM, contexto = id do
+/// documento) e guardado no próprio Postgres. Decisão registrada em
+/// docs/DECISOES.md (D-3.6): sem bucket de terceiro enquanto não houver
+/// operador contratado; a interface `Armazenamento` permite trocar depois.
+/// Tabela separada para que listar documentos não carregue os bytes.
+model DocumentoConteudo {
+  documentoId     String    @id @db.Uuid
+  documento       Documento @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+  conteudoCifrado Bytes
+  versaoChave     Int
+
+  @@map("documento_conteudo")
+}
+
+// =============================================================================
+// 12. PORTAL DO CLIENTE — Fase 4
+// -----------------------------------------------------------------------------
+// Acesso somente leitura por link individual, emitido por advogado, com
+// validade e revogação. O portal não tem cadastro nem senha do cliente: o
+// escritório entrega o link pessoalmente pelo canal oficial. O token é
+// guardado como hash — o banco vazado não dá acesso ao portal.
+// =============================================================================
+
+model AcessoPortal {
+  id                String    @id @default(uuid()) @db.Uuid
+  clienteId         String    @db.Uuid
+  cliente           Cliente   @relation(fields: [clienteId], references: [id])
+  tokenHash         String    @unique
+  criadoPorId       String    @db.Uuid
+  criadoPor         Usuario   @relation("AcessoPortalCriadoPor", fields: [criadoPorId], references: [id])
+  criadoEm          DateTime  @default(now())
+  expiraEm          DateTime
+  revogadoEm        DateTime?
+  ultimoAcessoEm    DateTime?
+  quantidadeAcessos Int       @default(0)
+
+  @@index([clienteId, revogadoEm])
+  @@map("acesso_portal")
 }

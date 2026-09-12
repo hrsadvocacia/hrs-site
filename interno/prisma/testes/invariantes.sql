@@ -272,6 +272,61 @@ SELECT deve_passar(
     VALUES ('e0000000-0000-0000-0000-000000000003', 'CONTRATUAL', 50000, DATE '2026-03-02', true, 'GOIANIA')$$);
 
 -- -----------------------------------------------------------------------------
+-- 9. Fase 3/4 — parcela, portal e template validado
+-- -----------------------------------------------------------------------------
+INSERT INTO "cliente" (id, "tipoPessoa", nome, "cpfCnpj", origem, "unidadeResponsavel", "atualizadoEm")
+VALUES ('c0000000-0000-0000-0000-000000000001', 'FISICA', 'Cliente Teste', '52998224725', 'BALCAO', 'GOIANIA', now());
+
+INSERT INTO "contrato_honorarios" (id, "clienteId", modalidade, "valorFixo", objeto, "dataAssinatura", "vigenciaInicio", unidade, "atualizadoEm")
+VALUES ('d0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'FIXO', 3000, 'Reclamacao trabalhista', DATE '2026-01-10', DATE '2026-01-10', 'GOIANIA', now());
+
+SELECT deve_falhar(
+  'parcela PAGA sem data e valor pago e recusada',
+  $$INSERT INTO "parcela" (id, "contratoId", numero, valor, vencimento, status, "atualizadoEm")
+    VALUES ('f0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', 1, 1000, DATE '2026-02-10', 'PAGO', now())$$);
+
+SELECT deve_falhar(
+  'parcela com valor zero e recusada',
+  $$INSERT INTO "parcela" (id, "contratoId", numero, valor, vencimento, "atualizadoEm")
+    VALUES ('f0000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000001', 2, 0, DATE '2026-02-10', now())$$);
+
+SELECT deve_passar(
+  'parcela paga com data e valor e aceita',
+  $$INSERT INTO "parcela" (id, "contratoId", numero, valor, vencimento, status, "pagoEm", "valorPago", "atualizadoEm")
+    VALUES ('f0000000-0000-0000-0000-000000000003', 'd0000000-0000-0000-0000-000000000001', 3, 1000, DATE '2026-02-10', 'PAGO', DATE '2026-02-09', 1000, now())$$);
+
+SELECT deve_falhar(
+  'link do portal com validade no passado e recusado',
+  $$INSERT INTO "acesso_portal" (id, "clienteId", "tokenHash", "criadoPorId", "expiraEm")
+    VALUES ('a0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'h1', '11111111-1111-1111-1111-111111111111', now() - interval '1 day')$$);
+
+INSERT INTO "template_mensagem" (id, codigo, titulo, canal, categoria, corpo, "criadoPorId")
+VALUES ('b0000000-0000-0000-0000-000000000001', 'T-NAO-VALIDADO', 'Sem validacao', 'EMAIL', 'RECEBIMENTO_DOCUMENTO', 'Ola {{nome}}', '11111111-1111-1111-1111-111111111111');
+INSERT INTO "template_mensagem" (id, codigo, titulo, canal, categoria, corpo, "criadoPorId", "validadoEm")
+VALUES ('b0000000-0000-0000-0000-000000000002', 'T-VALIDADO', 'Validado', 'EMAIL', 'RECEBIMENTO_DOCUMENTO', 'Ola {{nome}}', '11111111-1111-1111-1111-111111111111', now());
+INSERT INTO "template_mensagem" (id, codigo, titulo, canal, categoria, corpo, "criadoPorId", "validadoEm", ativo)
+VALUES ('b0000000-0000-0000-0000-000000000003', 'T-INATIVO', 'Inativo', 'EMAIL', 'RECEBIMENTO_DOCUMENTO', 'Ola {{nome}}', '11111111-1111-1111-1111-111111111111', now(), false);
+
+SELECT deve_falhar(
+  'envio com template sem validacao anti-promessa e recusado',
+  $$INSERT INTO "envio_mensagem" (id, "templateId", "clienteId", canal, destinatario, variaveis, "enviadoPorId")
+    VALUES ('e1000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'EMAIL', 'x@y.z', '{}', '11111111-1111-1111-1111-111111111111')$$);
+
+SELECT deve_falhar(
+  'envio com template inativo e recusado',
+  $$INSERT INTO "envio_mensagem" (id, "templateId", "clienteId", canal, destinatario, variaveis, "enviadoPorId")
+    VALUES ('e1000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000001', 'EMAIL', 'x@y.z', '{}', '11111111-1111-1111-1111-111111111111')$$);
+
+SELECT deve_passar(
+  'envio com template validado e ativo e aceito',
+  $$INSERT INTO "envio_mensagem" (id, "templateId", "clienteId", canal, destinatario, variaveis, "enviadoPorId")
+    VALUES ('e1000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001', 'EMAIL', 'x@y.z', '{}', '11111111-1111-1111-1111-111111111111')$$);
+
+SELECT deve_falhar(
+  'envio de mensagem nao se apaga',
+  $$DELETE FROM "envio_mensagem" WHERE id = 'e1000000-0000-0000-0000-000000000003'$$);
+
+-- -----------------------------------------------------------------------------
 DROP FUNCTION deve_falhar(text, text);
 DROP FUNCTION deve_passar(text, text);
 DROP FUNCTION sql_prazo(text, text, text, text, text);

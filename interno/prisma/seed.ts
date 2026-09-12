@@ -18,6 +18,8 @@ import { PrismaClient } from "../generated/prisma/client.ts";
 import { cifrar, gerarHashSenha, gerarTokenAleatorio, versaoChaveAtual } from "../lib/cripto.ts";
 import { gerarSegredoTotp, uriTotp } from "../lib/totp.ts";
 import { feriadosNacionais } from "../lib/feriados.ts";
+import { validarTexto } from "../lib/mensagens/compliance.ts";
+import { variaveisIndevidas, type Categoria } from "../lib/mensagens/variaveis.ts";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env["DATABASE_URL"]! }),
@@ -83,6 +85,64 @@ const EQUIPE = [
     oab: [],
   },
 ] as const;
+
+const TEMPLATES: ReadonlyArray<{
+  codigo: string;
+  titulo: string;
+  canal: "EMAIL" | "WHATSAPP";
+  categoria: Categoria;
+  corpo: string;
+}> = [
+  {
+    codigo: "DOC-RECEBIDO",
+    titulo: "Documento recebido",
+    canal: "WHATSAPP",
+    categoria: "RECEBIMENTO_DOCUMENTO",
+    corpo:
+      "Olá, {{primeiro_nome}}. Recebemos o documento {{documento}} em {{data_recebimento}} " +
+      "e ele já está com a equipe. Qualquer dúvida, fale com o escritório pelo {{telefone_escritorio}}. " +
+      "{{escritorio}} — {{unidade}}.",
+  },
+  {
+    codigo: "AUDIENCIA",
+    titulo: "Audiência designada",
+    canal: "WHATSAPP",
+    categoria: "AUDIENCIA_DESIGNADA",
+    corpo:
+      "Olá, {{primeiro_nome}}. A audiência do processo {{processo}} foi designada para " +
+      "{{data_audiencia}}, às {{hora_audiencia}}, em {{local}}. {{orientacoes}} " +
+      "Em caso de impossibilidade, avise o escritório o quanto antes. {{advogado}} — {{escritorio}}.",
+  },
+  {
+    codigo: "MOVIMENTACAO",
+    titulo: "Movimentação no processo",
+    canal: "EMAIL",
+    categoria: "MOVIMENTACAO_PROCESSO",
+    corpo:
+      "Prezado(a) {{nome}},\n\nHouve movimentação no processo {{processo}} em {{data_movimentacao}}: " +
+      "{{resumo_movimentacao}}.\n\nO escritório continua acompanhando e avisará a cada novo passo relevante. " +
+      "Não é possível prever o desfecho nem a data de término.\n\nAtenciosamente,\n{{advogado}}\n{{escritorio}} — {{unidade}}",
+  },
+  {
+    codigo: "REUNIAO",
+    titulo: "Convite para reunião",
+    canal: "WHATSAPP",
+    categoria: "CONVITE_REUNIAO",
+    corpo:
+      "Olá, {{primeiro_nome}}. Gostaríamos de conversar sobre {{assunto}}. Propomos uma reunião em " +
+      "{{data_reuniao}}, às {{hora_reuniao}}, em {{local}}. Confirma? {{advogado}} — {{escritorio}}.",
+  },
+  {
+    codigo: "COBRANCA",
+    titulo: "Lembrete de parcela de honorários",
+    canal: "WHATSAPP",
+    categoria: "COBRANCA_PARCELA",
+    corpo:
+      "Olá, {{primeiro_nome}}. Lembramos que a parcela {{numero_parcela}} do contrato de honorários, " +
+      "no valor de {{valor}}, vence em {{vencimento}}. Forma de pagamento: {{forma_pagamento}}. " +
+      "Se já pagou, desconsidere. {{escritorio}} — {{unidade}}.",
+  },
+];
 
 async function main() {
   console.log("Seed da Fase 0 — HRS Interno\n");
@@ -208,6 +268,39 @@ async function main() {
     );
   }
   console.log(`  ${EQUIPE.length} contas`);
+
+  // ------------------------------------------------------------- templates
+  // Um template por categoria do catalogo fechado. Cada um passa pela mesma
+  // validacao anti-promessa da tela antes de receber o carimbo `validadoEm` —
+  // o seed nao tem passe livre: se a validacao recusar, o template entra sem
+  // carimbo e o banco recusa usa-lo em envio.
+  const socia = await prisma.usuario.findUniqueOrThrow({
+    where: { email: "adrielly@hrsadvocacia.com.br" },
+    select: { id: true },
+  });
+  let templatesValidados = 0;
+  for (const t of TEMPLATES) {
+    const violacoes = [...validarTexto(t.corpo), ...variaveisIndevidas(t.corpo, t.categoria)];
+    if (violacoes.length > 0) {
+      console.warn(`  template ${t.codigo} NAO validado: ${violacoes.map((v) => v.trecho).join(", ")}`);
+    } else {
+      templatesValidados++;
+    }
+    await prisma.templateMensagem.upsert({
+      where: { codigo: t.codigo },
+      update: {},
+      create: {
+        codigo: t.codigo,
+        titulo: t.titulo,
+        canal: t.canal,
+        categoria: t.categoria,
+        corpo: t.corpo,
+        criadoPorId: socia.id,
+        validadoEm: violacoes.length === 0 ? new Date() : null,
+      },
+    });
+  }
+  console.log(`  ${TEMPLATES.length} templates de mensagem (${templatesValidados} validados)`);
 
   // ---------------------------------------------- calendarios e revisao anual
   const admin = await prisma.usuario.findUniqueOrThrow({

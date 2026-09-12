@@ -4,6 +4,7 @@ import { exigirPermissao } from "@/lib/sessao";
 import { prisma } from "@/lib/prisma";
 import { registrar } from "@/lib/auditoria";
 import { cargaPorAdvogado, conversao, funil, resumoDeRisco } from "@/lib/painel/indicadores";
+import { haRevisaoBloqueante, revisoesPendentes } from "@/lib/prazos/revisao";
 import { consolidar } from "@/lib/honorarios/regras";
 import { deDecimal, formatarBRL } from "@/lib/honorarios/dinheiro";
 import { hojeISO, iso } from "@/lib/tempo";
@@ -22,7 +23,7 @@ export default async function PainelSocio({
   const inicio = /^\d{4}-\d{2}-\d{2}$/.test(de ?? "") ? de! : `${hoje.slice(0, 4)}-01-01`;
   const fim = /^\d{4}-\d{2}-\d{2}$/.test(ate ?? "") ? ate! : hoje;
 
-  const [prazos, lancamentos, leads, clientesComProcesso, publicacoesOrfas, capturasFalhas] = await Promise.all([
+  const [prazos, lancamentos, leads, clientesComProcesso, publicacoesOrfas, capturasFalhas, revisoes] = await Promise.all([
     prisma.prazo.findMany({
       select: {
         id: true, status: true, dataFatal: true, cumpridoEm: true,
@@ -37,7 +38,24 @@ export default async function PainelSocio({
     prisma.cliente.count({ where: { ativo: true, processos: { some: { processo: { situacao: "EM_ANDAMENTO" } } } } }),
     prisma.publicacao.count({ where: { status: "ORFA" } }),
     prisma.capturaDiaria.count({ where: { status: "FALHA" } }),
+    prisma.revisaoAnualCalendario.findMany({
+      where: { status: { not: "CONCLUIDA" } },
+      include: {
+        tribunal: { select: { sigla: true, calendarios: { where: { status: "VIGENTE" }, select: { ano: true } } } },
+      },
+    }),
   ]);
+
+  const pendentesRevisao = revisoesPendentes(
+    revisoes.map((r) => ({
+      tribunalId: r.tribunalId,
+      tribunalSigla: r.tribunal.sigla,
+      ano: r.ano,
+      status: r.status as "PENDENTE" | "EM_ANDAMENTO",
+      temCalendarioVigente: r.tribunal.calendarios.some((c) => c.ano === r.ano),
+    })),
+    hoje,
+  );
 
   await registrar({
     usuarioId: usuario.id,
@@ -85,7 +103,7 @@ export default async function PainelSocio({
         <h1>Painel do sócio</h1>
         <p className="legenda">Risco de prazo, carga por advogado, faturamento e funil.</p>
 
-        {(risco.vencidosSemBaixa > 0 || capturasFalhas > 0) && (
+        {(risco.vencidosSemBaixa > 0 || capturasFalhas > 0 || haRevisaoBloqueante(pendentesRevisao)) && (
           <div className="aviso aviso-erro">
             <strong>Atenção imediata.</strong>
             <ul style={{ margin: ".4rem 0 0", paddingLeft: "1.2rem" }}>
@@ -94,6 +112,13 @@ export default async function PainelSocio({
               )}
               {capturasFalhas > 0 && (
                 <li>{capturasFalhas} captura(s) de publicação em falha — <Link href="/publicacoes">ver</Link></li>
+              )}
+              {haRevisaoBloqueante(pendentesRevisao) && (
+                <li>
+                  Há tribunal sem calendário vigente para {hoje.slice(0, 4)}: o motor{" "}
+                  <strong>recusa calcular prazo</strong> nesses casos —{" "}
+                  <Link href="/calendarios">aprovar calendário</Link>
+                </li>
               )}
             </ul>
           </div>
@@ -128,6 +153,36 @@ export default async function PainelSocio({
           no próprio dia fatal significa que a margem foi consumida inteira: qualquer atraso na captura, naquele
           caso, teria virado prazo perdido.
         </p>
+
+        {pendentesRevisao.length > 0 && (
+          <>
+            <h2>Revisão anual dos calendários</h2>
+            <p className="legenda">
+              Feriado municipal muda de data e portaria de suspensão é publicada todo ano. Calendário do ano
+              anterior não é aproximação aceitável: erra em dias específicos, e cada dia errado é um prazo
+              contado a mais ou a menos.
+            </p>
+            <div className="rolagem">
+              <table>
+                <thead><tr><th>Tribunal</th><th>Ano</th><th>Situação</th><th>Por quê</th></tr></thead>
+                <tbody>
+                  {pendentesRevisao.map((r) => (
+                    <tr key={`${r.tribunalId}-${r.ano}`}>
+                      <td>{r.tribunalSigla}</td>
+                      <td>{r.ano}</td>
+                      <td>
+                        <span className={`etiqueta ${r.urgencia === "VENCIDA" ? "etiqueta-alerta" : r.urgencia === "URGENTE" ? "etiqueta-pendente" : ""}`}>
+                          {r.urgencia === "VENCIDA" ? "bloqueia cálculo" : r.urgencia === "URGENTE" ? "urgente" : "antecipada"}
+                        </span>
+                      </td>
+                      <td>{r.motivo}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
 
         <h2>Carga por advogado</h2>
         {carga.length === 0 ? <p className="vazio">Nenhum prazo cadastrado.</p> : (

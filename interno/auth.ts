@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { conferirSenha, decifrar } from "@/lib/cripto";
 import { conferirTotp } from "@/lib/totp";
 import { registrar } from "@/lib/auditoria";
+import { ipDaRequisicao, POLITICA_LOGIN, registrarTentativa } from "@/lib/limite/servico";
+import { headers } from "next/headers";
 
 /** Tempo de bloqueio apos tentativas malsucedidas seguidas. */
 const MAX_TENTATIVAS = 5;
@@ -35,6 +37,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const senha = String(credenciais?.senha ?? "");
         const codigo = String(credenciais?.codigo ?? "");
         if (!email || !senha || !codigo) return null;
+
+        // Limite por ORIGEM, antes de tocar o banco de usuarios. O bloqueio por
+        // conta (5 falhas) protege uma conta; este protege contra alguem varrendo
+        // varias contas de um mesmo lugar, e contra forca bruta no codigo TOTP —
+        // que tem so um milhao de combinacoes.
+        const origem = ipDaRequisicao(await headers().catch(() => new Headers()));
+        const limite = await registrarTentativa("login", origem, POLITICA_LOGIN);
+        if (!limite.permitido) {
+          await registrar({
+            usuarioId: null,
+            usuarioEmail: email,
+            acao: "LOGIN_FALHO",
+            entidade: "usuario",
+            descricao: `Tentativa recusada por limite de origem (aguardar ${limite.esperaSegundos}s)`,
+            sucesso: false,
+          }).catch(() => undefined);
+          return null;
+        }
 
         const usuario = await prisma.usuario.findUnique({ where: { email } });
 

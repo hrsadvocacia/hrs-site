@@ -155,6 +155,21 @@ model Sessao {
   @@map("sessao")
 }
 
+/// Limitacao de tentativas por origem (IP), compartilhada entre as instancias
+/// serverless. Em memoria nao serve: cada requisicao pode cair num processo
+/// diferente, e o limitador protegeria apenas a instancia que por acaso
+/// atendeu. A chave guarda o IP HMAC-ado — a tabela precisa distinguir origens,
+/// nao identifica-las (LGPD art. 5, I).
+model LimiteTentativa {
+  chave      String   @id
+  inicio     DateTime
+  contagem   Int
+  atualizado DateTime @updatedAt
+
+  @@index([inicio])
+  @@map("limite_tentativa")
+}
+
 // =============================================================================
 // 2. AUDITORIA — append-only
 // -----------------------------------------------------------------------------

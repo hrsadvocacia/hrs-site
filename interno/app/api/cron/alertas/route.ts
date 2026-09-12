@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { alertasDoDia, type PrazoParaAlerta } from "@/lib/prazos/alertas";
 import { registrar } from "@/lib/auditoria";
+import { revisoesPendentes } from "@/lib/prazos/revisao";
+import { limparJanelasExpiradas } from "@/lib/limite/servico";
 
 /**
  * Job diário de alertas de prazo.
@@ -92,12 +94,55 @@ export async function GET(requisicao: Request) {
     }
   }
 
+  // --- Revisão anual dos calendários -----------------------------------------
+  // Calendário do ano anterior não é "quase certo": é errado em dias
+  // específicos, e cada um vira prazo contado a mais ou a menos. A cobrança
+  // começa em novembro e o carimbo evita repetir o alerta todo dia.
+  const revisoes = await prisma.revisaoAnualCalendario.findMany({
+    where: { status: { not: "CONCLUIDA" } },
+    include: {
+      tribunal: {
+        select: { id: true, sigla: true, calendarios: { where: { status: "VIGENTE" }, select: { ano: true } } },
+      },
+    },
+  });
+
+  const pendentesRevisao = revisoesPendentes(
+    revisoes.map((r) => ({
+      tribunalId: r.tribunalId,
+      tribunalSigla: r.tribunal.sigla,
+      ano: r.ano,
+      status: r.status as "PENDENTE" | "EM_ANDAMENTO",
+      temCalendarioVigente: r.tribunal.calendarios.some((c) => c.ano === r.ano),
+    })),
+    hoje,
+  );
+
+  let revisoesCarimbadas = 0;
+  for (const p of pendentesRevisao) {
+    const registro = revisoes.find((r) => r.tribunalId === p.tribunalId && r.ano === p.ano);
+    if (!registro) continue;
+    // Um carimbo por semana: o alerta precisa insistir sem virar ruído diário.
+    const ultimoAlerta = registro.alertaDisparadoEm?.getTime() ?? 0;
+    if (Date.now() - ultimoAlerta < 7 * 86_400_000) continue;
+    await prisma.revisaoAnualCalendario.update({
+      where: { id: registro.id },
+      data: { alertaDisparadoEm: new Date() },
+    });
+    revisoesCarimbadas++;
+  }
+
+  const janelasLimpas = await limparJanelasExpiradas();
+
   await registrar({
     usuarioId: null,
     usuarioEmail: "sistema@hrsadvocacia.com.br",
     acao: "ALTERACAO",
     entidade: "alerta_prazo",
-    descricao: `Rotina diária de alertas: ${gravados} alerta(s) gerado(s) sobre ${prazos.length} prazo(s) em curso`,
+    descricao:
+      `Rotina diária: ${gravados} alerta(s) de prazo sobre ${prazos.length} prazo(s) em curso; ` +
+      `${pendentesRevisao.length} revisão(ões) de calendário pendente(s); ` +
+      `${janelasLimpas} janela(s) de limitação expurgada(s)`,
   });
 
   return NextResponse.json({
@@ -105,5 +150,8 @@ export async function GET(requisicao: Request) {
     prazosAvaliados: prazos.length,
     alertasGerados: gravados,
     escalonamentos: aDisparar.filter((a) => a.escalonamento).length,
+    revisoesPendentes: pendentesRevisao.map((p) => ({ tribunal: p.tribunalSigla, ano: p.ano, urgencia: p.urgencia })),
+    revisoesCarimbadas,
+    janelasDeLimitacaoExpurgadas: janelasLimpas,
   });
 }

@@ -9,6 +9,12 @@ import { ORIGEM_CLIENTE, SITUACAO_PROCESSO, TIPO_CONTATO, TIPO_PESSOA, UNIDADE, 
 import { registrar } from "@/lib/auditoria";
 import { FormularioCliente } from "../formulario";
 import { editarCliente } from "../acoes";
+import { FormularioDocumento } from "@/app/documentos/formulario";
+import { ListaDocumentos } from "@/app/documentos/lista";
+import { filtroDocumentos } from "@/app/documentos/acesso";
+import { FormularioAcessoPortal } from "@/app/portal/formulario";
+import { revogarAcessoPortal } from "@/app/portal/acoes";
+import { dataBR, dataHoraBR } from "@/lib/tempo";
 
 export const metadata = { title: "Cliente — HRS Interno" };
 
@@ -30,6 +36,12 @@ export default async function DetalheCliente({
       contatos: true,
       processos: { include: { processo: { select: { id: true, numeroCnj: true, situacao: true } } } },
       _count: { select: { dadosSensiveis: true } },
+      atendimentos: {
+        orderBy: { data: "desc" },
+        take: 5,
+        include: { atendidoPor: { select: { nome: true } } },
+      },
+      acessosPortal: { orderBy: { criadoEm: "desc" }, take: 5 },
     },
   });
   if (!cliente) notFound();
@@ -49,6 +61,15 @@ export default async function DetalheCliente({
     cliente.contatos.find((c) => c.tipo === tipo)?.valor ?? "";
 
   const modoEdicao = editar === "1" && pode(usuario.perfil, "cliente", "editar");
+
+  const documentos = await prisma.documento.findMany({
+    where: { clienteId: cliente.id, ...filtroDocumentos(usuario) },
+    orderBy: { criadoEm: "desc" },
+    include: { enviadoPor: { select: { nome: true } } },
+  });
+
+  // Base absoluta para montar o link do portal que será entregue ao cliente.
+  const baseUrl = process.env["NEXT_PUBLIC_URL_BASE"] ?? "";
 
   return (
     <>
@@ -150,8 +171,8 @@ export default async function DetalheCliente({
                 <p style={{ margin: 0 }}>
                   {cliente._count.dadosSensiveis} registro(s) em cadastro
                   apartado e cifrado. A leitura de cada um é registrada
-                  individualmente (LGPD art. 11, II, &quot;d&quot;). Cadastro
-                  disponível a partir da Fase 3.
+                  individualmente (LGPD art. 11, II, &quot;d&quot;).{" "}
+                  <Link href={`/clientes/${cliente.id}/saude`}>abrir cadastro de saúde</Link>
                 </p>
               ) : (
                 <p style={{ margin: 0 }} className="vazio">
@@ -160,11 +181,83 @@ export default async function DetalheCliente({
               )}
             </div>
 
+            <h2>Documentos</h2>
+            <ListaDocumentos documentos={documentos} usuarioId={usuario.id} />
+            {pode(usuario.perfil, "documento", "criar") && (
+              <FormularioDocumento
+                clienteId={cliente.id}
+                podeSensivel={pode(usuario.perfil, "documentoSensivel", "criar")}
+              />
+            )}
+
+            <h2>Atendimentos recentes</h2>
+            {cliente.atendimentos.length === 0 ? (
+              <p className="vazio">Nenhum atendimento registrado.</p>
+            ) : (
+              <div className="cartao">
+                {cliente.atendimentos.map((a) => (
+                  <p key={a.id} style={{ marginBottom: ".6rem" }}>
+                    <strong>{dataHoraBR(a.data)}</strong> — {a.atendidoPor.nome}: {a.resumo}
+                    {a.proximoPasso && (
+                      <><br /><small>Próximo passo: {a.proximoPasso} (até {dataBR(a.proximoPassoEm)})</small></>
+                    )}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            <h2>Portal do cliente</h2>
+            <p className="legenda">
+              Acesso somente leitura ao andamento dos processos e às próximas audiências. O cliente não tem
+              conta: entra por link individual, com validade e revogação.
+            </p>
+            {cliente.acessosPortal.length > 0 && (
+              <div className="rolagem">
+                <table>
+                  <thead><tr><th>Emitido em</th><th>Validade</th><th>Acessos</th><th>Situação</th><th></th></tr></thead>
+                  <tbody>
+                    {cliente.acessosPortal.map((a) => (
+                      <tr key={a.id}>
+                        <td>{dataBR(a.criadoEm)}</td>
+                        <td>{dataBR(a.expiraEm)}</td>
+                        <td>{a.quantidadeAcessos}{a.ultimoAcessoEm && <><br /><small>último: {dataHoraBR(a.ultimoAcessoEm)}</small></>}</td>
+                        <td>
+                          {a.revogadoEm
+                            ? <span className="etiqueta">revogado</span>
+                            : a.expiraEm <= new Date()
+                              ? <span className="etiqueta">expirado</span>
+                              : <span className="etiqueta etiqueta-pendente">ativo</span>}
+                        </td>
+                        <td>
+                          {!a.revogadoEm && a.expiraEm > new Date() && pode(usuario.perfil, "cliente", "editar") && (
+                            <form action={async () => { "use server"; await revogarAcessoPortal(a.id); }}>
+                              <button className="botao-secundario" type="submit">revogar</button>
+                            </form>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {pode(usuario.perfil, "cliente", "editar") && (
+              <FormularioAcessoPortal clienteId={cliente.id} base={baseUrl} />
+            )}
+
             {pode(usuario.perfil, "cliente", "editar") && (
               <div className="acoes">
                 <Link className="botao" href={`/clientes/${cliente.id}?editar=1`}>
                   Editar cadastro
                 </Link>
+                <Link className="botao-secundario" href={`/atendimentos/novo?clienteId=${cliente.id}`}>
+                  Registrar atendimento
+                </Link>
+                {pode(usuario.perfil, "atendimento", "criar") && (
+                  <Link className="botao-secundario" href={`/mensagens/enviar?clienteId=${cliente.id}`}>
+                    Enviar mensagem
+                  </Link>
+                )}
               </div>
             )}
           </>

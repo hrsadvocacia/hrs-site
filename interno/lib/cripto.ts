@@ -74,6 +74,43 @@ export function cifrar(
 }
 
 /**
+ * Mesma cifragem, para conteudo BINARIO (arquivo enviado). Texto e bytes
+ * usam funcoes separadas de proposito: converter arquivo para string passaria
+ * por UTF-8 e corromperia silenciosamente qualquer PDF ou imagem.
+ */
+export function cifrarBytes(
+  conteudo: Uint8Array,
+  contextoAutenticado: string,
+  versao = versaoChaveAtual(),
+): { blob: Buffer; versaoChave: number } {
+  const iv = randomBytes(TAMANHO_IV);
+  const cipher = createCipheriv("aes-256-gcm", chaveMestra(versao), iv);
+  cipher.setAAD(Buffer.from(contextoAutenticado, "utf8"));
+  const cifrado = Buffer.concat([cipher.update(Buffer.from(conteudo)), cipher.final()]);
+  return {
+    blob: Buffer.concat([iv, cipher.getAuthTag(), cifrado]),
+    versaoChave: versao,
+  };
+}
+
+export function decifrarBytes(
+  blob: Buffer,
+  contextoAutenticado: string,
+  versao: number,
+): Buffer {
+  if (blob.length <= TAMANHO_IV + TAMANHO_TAG) {
+    throw new Error("Blob cifrado malformado.");
+  }
+  const iv = blob.subarray(0, TAMANHO_IV);
+  const tag = blob.subarray(TAMANHO_IV, TAMANHO_IV + TAMANHO_TAG);
+  const cifrado = blob.subarray(TAMANHO_IV + TAMANHO_TAG);
+  const decipher = createDecipheriv("aes-256-gcm", chaveMestra(versao), iv);
+  decipher.setAAD(Buffer.from(contextoAutenticado, "utf8"));
+  decipher.setAuthTag(tag);
+  return Buffer.concat([decipher.update(cifrado), decipher.final()]);
+}
+
+/**
  * Decifra o blob. Lanca se a tag nao conferir — o que acontece tanto em
  * adulteracao quanto em contexto errado. Falha fechada, nunca devolve lixo.
  */

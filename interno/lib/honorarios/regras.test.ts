@@ -147,3 +147,20 @@ describe("reguaCobranca", () => {
     assert.ok(!ids.includes("h"));
   });
 });
+
+describe("porExtenso", () => {
+  it("cobre os casos do recibo", async () => {
+    const { porExtenso } = await import("./dinheiro.ts");
+    assert.equal(porExtenso(100), "um real");
+    assert.equal(porExtenso(150), "um real e cinquenta centavos");
+    assert.equal(porExtenso(1), "um centavo");
+    assert.equal(porExtenso(10000), "cem reais");
+    assert.equal(porExtenso(123456), "mil duzentos e trinta e quatro reais e cinquenta e seis centavos");
+    assert.equal(porExtenso(100000), "mil reais");
+    assert.equal(porExtenso(210000), "dois mil e cem reais");
+    assert.equal(porExtenso(200500), "dois mil e cinco reais");
+    assert.equal(porExtenso(350000000), "três milhões e quinhentos mil reais");
+    assert.equal(porExtenso(100000000), "um milhão de reais");
+    assert.equal(porExtenso(0), "zero reais");
+  });
+});

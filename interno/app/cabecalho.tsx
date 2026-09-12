@@ -44,12 +44,32 @@ export function Cabecalho({
           {pode(perfil, "publicacao", "ler") && (
             <Link href="/domicilio">Domicílio</Link>
           )}
+          {pode(perfil, "agenda", "ler") && <Link href="/agenda">Agenda</Link>}
+          {pode(perfil, "atendimento", "ler") && (
+            <Link href="/atendimentos">Atendimentos</Link>
+          )}
+          {pode(perfil, "financeiro", "ler") && (
+            <Link href="/honorarios">Honorários</Link>
+          )}
+          {pode(perfil, "documento", "ler") && (
+            <Link href="/documentos">Documentos</Link>
+          )}
+          {pode(perfil, "templateMensagem", "ler") && (
+            <Link href="/mensagens">Mensagens</Link>
+          )}
+          {pode(perfil, "relatorioSocio", "ler") && (
+            <Link href="/painel">Painel do sócio</Link>
+          )}
           {pode(perfil, "calendario", "editar") && (
             <Link href="/calendarios">Calendários</Link>
           )}
+          {pode(perfil, "usuario", "ler") && <Link href="/usuarios">Contas</Link>}
+          {pode(perfil, "auditoria", "ler") && <Link href="/auditoria">Auditoria</Link>}
         </nav>
         <div className="identificacao">
-          <strong>{nome}</strong>
+          <strong>
+            <Link href="/conta" style={{ color: "inherit" }}>{nome}</Link>
+          </strong>
           {rotulo(PERFIL, perfil)} &middot; {rotulo(UNIDADE, unidade)}
         </div>
         <form

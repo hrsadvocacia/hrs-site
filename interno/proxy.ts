@@ -20,6 +20,11 @@ export const config = {
      *               o cron da Vercel receberia um redirecionamento para a tela
      *               de login e o job NUNCA rodaria — falha silenciosa, que e
      *               exatamente o que este sistema nao pode ter;
+     *   portal    — o portal do cliente. O cliente NAO tem conta neste sistema:
+     *               ele entra por link individual com token de alta entropia,
+     *               conferido contra o hash guardado no banco, com validade e
+     *               revogacao. Exigir sessao aqui tornaria o portal inacessivel
+     *               a quem ele existe para atender;
      *   entrar    — a tela de login;
      *   _next     — artefatos de build;
      *   qualquer caminho com ponto — arquivo estatico servido de public/.
@@ -29,6 +34,6 @@ export const config = {
      * aparecer. Nenhum arquivo de public/ contem dado de cliente — documento de
      * processo nao mora ali, e servido por URL assinada de curta duracao.
      */
-    "/((?!api/auth|api/cron|entrar|_next|.*\\.).*)",
+    "/((?!api/auth|api/cron|portal|entrar|_next|.*\\.).*)",
   ],
 };

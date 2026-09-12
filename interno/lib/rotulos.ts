@@ -82,3 +82,133 @@ export const ORIGEM_MOVIMENTACAO: Record<string, string> = {
 export function rotulo(mapa: Record<string, string>, valor: string): string {
   return mapa[valor] ?? valor;
 }
+
+export const MODALIDADE_HONORARIOS: Record<string, string> = {
+  FIXO: "Valor fixo",
+  EXITO: "Êxito (percentual)",
+  MISTO: "Misto (fixo + êxito)",
+  PRO_LABORE_MAIS_EXITO: "Pró-labore + êxito",
+  CONSULTIVO_MENSAL: "Consultivo mensal",
+};
+
+export const NATUREZA_HONORARIOS: Record<string, string> = {
+  CONTRATUAL: "Contratual",
+  SUCUMBENCIA: "Sucumbência (EAOAB art. 23)",
+  CONTRATUAL_DESTACADO: "Contratual destacado (EAOAB art. 22, § 4º)",
+};
+
+export const STATUS_PARCELA: Record<string, string> = {
+  A_VENCER: "A vencer",
+  PAGO: "Paga",
+  EM_ATRASO: "Em atraso",
+  RENEGOCIADO: "Renegociada",
+  CANCELADO: "Cancelada",
+};
+
+export const FORMA_PAGAMENTO: Record<string, string> = {
+  PIX: "Pix",
+  TRANSFERENCIA: "Transferência",
+  BOLETO: "Boleto",
+  DINHEIRO: "Dinheiro",
+  CARTAO: "Cartão",
+  DEPOSITO_JUDICIAL: "Depósito judicial",
+};
+
+export const MARCO_COBRANCA: Record<string, string> = {
+  LEMBRETE_D5: "Vence em até 5 dias",
+  VENCE_HOJE: "Vence hoje",
+  ATRASO_D3: "3 a 9 dias de atraso",
+  ATRASO_D10: "10 a 29 dias de atraso",
+  ATRASO_D30: "30 dias ou mais de atraso",
+};
+
+export const CANAL_ATENDIMENTO: Record<string, string> = {
+  PRESENCIAL: "Presencial",
+  TELEFONE: "Telefone",
+  WHATSAPP: "WhatsApp",
+  EMAIL: "E-mail",
+  VIDEOCHAMADA: "Videochamada",
+  OUTRO: "Outro",
+};
+
+export const CATEGORIA_TEMPLATE: Record<string, string> = {
+  RECEBIMENTO_DOCUMENTO: "Recebimento de documento",
+  AUDIENCIA_DESIGNADA: "Audiência designada",
+  MOVIMENTACAO_PROCESSO: "Movimentação no processo",
+  CONVITE_REUNIAO: "Convite para reunião",
+  COBRANCA_PARCELA: "Cobrança de parcela",
+};
+
+export const STATUS_ENVIO: Record<string, string> = {
+  PENDENTE: "Aguardando envio",
+  ENVIADO: "Enviada",
+  ENTREGUE: "Entregue",
+  LIDO: "Lida",
+  FALHA: "Falha",
+};
+
+export const ORIGEM_SIMULADOR: Record<string, string> = {
+  PRECATORIO_RPV: "Simulador de precatório/RPV",
+  VERBAS_RESCISORIAS: "Simulador de verbas rescisórias",
+  OUTRO: "Outro",
+};
+
+export const STATUS_LEAD: Record<string, string> = {
+  AGUARDANDO_CONTATO: "Aguardando contato",
+  EM_CONTATO: "Em contato",
+  CONVERTIDO: "Convertido em cliente",
+  DESCARTADO: "Descartado",
+  SEM_CONSENTIMENTO: "Sem consentimento — não contatar",
+};
+
+export const TIPO_COMPROMISSO: Record<string, string> = {
+  AUDIENCIA: "Audiência",
+  PERICIA: "Perícia",
+  REUNIAO: "Reunião",
+  SUSTENTACAO_ORAL: "Sustentação oral",
+  DILIGENCIA: "Diligência",
+  OUTRO: "Outro",
+};
+
+export const STATUS_COMPROMISSO: Record<string, string> = {
+  AGENDADO: "Agendado",
+  REALIZADO: "Realizado",
+  ADIADO: "Adiado",
+  CANCELADO: "Cancelado",
+};
+
+export const CATEGORIA_DADO_SENSIVEL: Record<string, string> = {
+  LAUDO_MEDICO: "Laudo médico",
+  CID: "CID",
+  EXAME: "Exame",
+  ATESTADO: "Atestado",
+  BENEFICIO_INSS: "Benefício do INSS",
+  PERICIA_MEDICA: "Perícia médica",
+  OUTRO: "Outro",
+};
+
+export const STATUS_ANTIVIRUS: Record<string, string> = {
+  PENDENTE: "Sem verificação antivírus",
+  LIMPO: "Verificado",
+  INFECTADO: "Infectado — bloqueado",
+  ERRO: "Erro na verificação",
+};
+
+export const ACAO_AUDITORIA: Record<string, string> = {
+  LOGIN: "Acesso",
+  LOGIN_FALHO: "Acesso recusado",
+  LOGOUT: "Saída",
+  LEITURA: "Leitura",
+  ACESSO_DADO_SENSIVEL: "Leitura de dado sensível",
+  CRIACAO: "Criação",
+  ALTERACAO: "Alteração",
+  INATIVACAO: "Inativação",
+  EXPORTACAO: "Exportação",
+  CONFIRMACAO_PRAZO: "Confirmação de prazo",
+  CANCELAMENTO_PRAZO: "Cancelamento de prazo",
+  TRIAGEM_PUBLICACAO: "Triagem de publicação",
+  ENVIO_MENSAGEM: "Envio de mensagem",
+  ALTERACAO_PERMISSAO: "Alteração de permissão",
+  ANONIMIZACAO: "Anonimização",
+  ACESSO_PORTAL: "Acesso ao portal do cliente",
+};

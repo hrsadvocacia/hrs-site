@@ -129,3 +129,18 @@ describe("tokens", () => {
     assert.notEqual(hashToken(token), token);
   });
 });
+
+describe("cifrarBytes / decifrarBytes", () => {
+  it("preserva bytes binários exatamente", async () => {
+    const { cifrarBytes, decifrarBytes } = await import("./cripto.ts");
+    const original = Buffer.from([0x25, 0x50, 0x44, 0x46, 0x00, 0xff, 0xfe, 0x80, 0x01]);
+    const { blob, versaoChave } = cifrarBytes(original, "documento:abc");
+    const volta = decifrarBytes(blob, "documento:abc", versaoChave);
+    assert.deepEqual([...volta], [...original]);
+  });
+  it("recusa contexto trocado (blob copiado de outro documento)", async () => {
+    const { cifrarBytes, decifrarBytes } = await import("./cripto.ts");
+    const { blob, versaoChave } = cifrarBytes(Buffer.from("x"), "documento:abc");
+    assert.throws(() => decifrarBytes(blob, "documento:outro", versaoChave));
+  });
+});

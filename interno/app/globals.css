@@ -581,3 +581,22 @@ button:disabled {
     border-top: 1px solid var(--ouro-medio);
   }
 }
+
+/* Documento impresso em folha timbrada (recibo, procuração, declaração). */
+.documento-impresso {
+  max-width: 800px;
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+.documento-impresso p {
+  text-align: justify;
+}
+@media print {
+  .documento-impresso .acoes {
+    display: none;
+  }
+  .documento-impresso {
+    max-width: none;
+    padding: 0 1.5cm;
+  }
+}

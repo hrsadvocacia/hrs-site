@@ -155,3 +155,11 @@ describe("negação de previsão é a frase correta", () => {
     assert.ok(tipos("Não é impossível, temos certeza de que vai vencer.").includes("PROMESSA_RESULTADO"));
   });
 });
+
+describe("o trecho citado é legível", () => {
+  it("cita o valor inteiro, não o primeiro dígito", () => {
+    const v = validarTexto("Você vai receber R$ 50.000,00.");
+    const moeda = v.find((x) => x.trecho.startsWith("r$"));
+    assert.equal(moeda?.trecho, "r$ 50.000,00");
+  });
+});

@@ -72,7 +72,9 @@ const REGRAS: ReadonlyArray<{ tipo: TipoVedacao; padrao: RegExp; admiteNegacao?:
   { tipo: "PROMESSA_RESULTADO", padrao: /\b(?:vai|ira|deve|devera|havera de)\s+(?:ser\s+)?(?:procedente|deferid[oa]|condenad[oa]|reconhecid[oa]|julgad[oa] procedente)\b/ },
 
   // ---- Valor certo ------------------------------------------------------------
-  { tipo: "VALOR_CERTO", padrao: /\br\$\s*\d/ },
+  // O trecho citado precisa conter o valor INTEIRO: "r$ 5" como citação faz o
+  // advogado procurar no texto o que o sistema quis dizer.
+  { tipo: "VALOR_CERTO", padrao: /\br\$\s*\d(?:[\d.,]*\d)?/ },
   { tipo: "VALOR_CERTO", padrao: /\b\d[\d.]*,\d{2}\s*(?:reais|mil reais)\b/ },
   { tipo: "VALOR_CERTO", padrao: /\b\d+\s*(?:mil|milhoes?|milhao)\s*(?:reais|de reais)\b/ },
   { tipo: "VALOR_CERTO", padrao: /\b(?:voce|voces|o senhor|a senhora|vc|o cliente|a cliente)\s+(?:vai|ira|deve|devera|podera|pode)\s+receber\b/ },

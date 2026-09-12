@@ -632,3 +632,34 @@ existem (`FontePublicacao`), sem mexer nas telas.
 O DataJud, quando entrar, **nunca** será fonte de prazo: é enriquecimento de
 andamento. Prazo nasce de publicação em diário ou de lançamento manual de
 advogado.
+
+### D-4.4 — Plano Hobby na Vercel: decisão do escritório, compensada no código
+
+O escritório decidiu usar o plano Hobby, entendendo o sistema como uso interno.
+Registro do que isso significa, para que a decisão possa ser revista depois com
+informação, e não relembrada de memória:
+
+- nos termos da Vercel, "uso comercial" não é vender o software, e sim usá-lo na
+  operação de um negócio — o que alcança um back-office de escritório. O risco
+  é a suspensão do projeto, que derrubaria o controle de prazos junto;
+- sem Trusted IPs/WAF, o sistema fica acessível de qualquer lugar da internet.
+
+O que passou a existir no código por causa disso:
+
+- **Content-Security-Policy** com `default-src 'self'` e `connect-src 'self'`:
+  ainda que algo fosse injetado numa tela, o navegador recusaria mandar dado de
+  cliente para outro host. `unsafe-inline` em `script-src` é concessão ao Next
+  (hidratação e streaming); a alternativa por nonce exigiria o proxy rodar em
+  toda rota, inclusive login e portal, e um erro ali derruba o acesso — o ganho
+  real contra exfiltração vem de `connect-src`, que fica estrito;
+- **`robots.txt` recusando tudo**, somado ao `X-Robots-Tag` que já existia. O
+  portal do cliente tem links individuais e não deveria aparecer em busca
+  alguma;
+- **limite por origem também no portal** (30 aberturas / 5 min), aplicado
+  *antes* de consultar o token e valendo tanto para token válido quanto
+  inválido — limitar só o que falha ensinaria ao atacante quais tentativas
+  acertaram. Não é sobre adivinhar um token de 32 bytes: é sobre não deixar a
+  única rota pública consumir banco e inflar auditoria à vontade.
+
+Verificado no navegador: login, hidratação do React e interatividade de
+formulário funcionam sob a CSP, sem nenhuma violação no console.

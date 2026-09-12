@@ -25,10 +25,34 @@ usado para valer se forem pulados.
 2. **Root Directory: `interno/`** — isto é essencial. O repositório contém
    também o site institucional, que é outro projeto.
 3. Framework: Next.js (detectado automaticamente).
-4. Plano: **Pro**. Duas razões, ambas concretas:
-   - os termos do plano Hobby **vedam uso comercial**;
-   - Trusted IPs e regras de firewall, que restringem o acesso ao sistema às
-     redes do escritório, só existem a partir do Pro.
+4. Plano: **decisão do escritório — Hobby, por ora.**
+
+   Registro do que foi decidido e do que a decisão implica, para que a escolha
+   possa ser revista com informação:
+
+   - Os termos do plano Hobby limitam-no a uso **pessoal e não comercial**. Na
+     definição da Vercel, "comercial" não é vender o software: é usá-lo na
+     operação de um negócio. Um back-office de escritório de advocacia,
+     ainda que apenas interno e sem faturamento próprio, cai nessa definição.
+     **Risco concreto:** suspensão do projeto pela Vercel — e o que sai do ar
+     junto é o controle de prazos.
+   - **Trusted IPs e regras de firewall não existem no Hobby.** Consequência
+     prática: o sistema fica acessível de qualquer lugar da internet,
+     protegido apenas por senha, 2FA obrigatório e limite de tentativas por
+     origem. Isso é razoável, mas é uma camada a menos do que se pretendia.
+   - O cron do Hobby é **impreciso** (a Vercel executa uma vez por dia, em
+     horário aproximado). Hoje isso pesa pouco, porque a captura automática
+     ainda não existe; passará a pesar no dia em que o DJEN entrar, quando o
+     horário da consulta diária vira parte do controle de prazo.
+
+   Para compensar a ausência de firewall, o sistema traz, por código:
+   Content-Security-Policy que bloqueia qualquer requisição a host de terceiro
+   (impede exfiltração), `robots.txt` e `X-Robots-Tag` recusando indexação,
+   HSTS, e limite de tentativas por origem tanto no login quanto no portal.
+
+   **Se em algum momento o escritório puder migrar para o Pro**, os dois ganhos
+   diretos são a restrição do acesso às redes do escritório e a regularidade
+   contratual.
 
 ## 3. Variáveis de ambiente
 

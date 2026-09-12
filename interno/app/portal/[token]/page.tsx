@@ -1,5 +1,6 @@
-import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { ipDaRequisicao, POLITICA_PORTAL, registrarTentativa } from "@/lib/limite/servico";
 import { registrar } from "@/lib/auditoria";
 import { conferirAcesso, hashTokenPortal } from "@/lib/portal/acesso";
 import { GRAU_EM_LINGUAGEM_SIMPLES, SITUACAO_EM_LINGUAGEM_SIMPLES, TEXTOS_PORTAL } from "@/lib/portal/linguagem";
@@ -26,6 +27,30 @@ export const metadata = {
  */
 export default async function Portal({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
+
+  // O portal e a UNICA rota publica do sistema. Sem WAF na frente, o limite por
+  // origem e o que impede alguem de varrer tokens em serie — nao porque um
+  // token de 32 bytes seja adivinhavel, mas porque a varredura consumiria banco
+  // e encheria a auditoria. Vale para token valido e invalido: limitar so o que
+  // falha ensinaria ao atacante quais tentativas acertaram.
+  const origem = ipDaRequisicao(await headers());
+  const limite = await registrarTentativa("portal", origem, POLITICA_PORTAL);
+  if (!limite.permitido) {
+    return (
+      <main className="portal">
+        <div className="folha" style={{ maxWidth: 520, margin: "3rem auto" }}>
+          <div className="marca"><img src="/marca/hrs-logo.png" alt="HRS Advocacia" width={190} height={97} /></div>
+          <div style={{ padding: "0 2rem 2rem" }}>
+            <h1 style={{ fontSize: "1rem" }}>Muitas aberturas seguidas</h1>
+            <p>
+              Aguarde alguns minutos e abra o link novamente. Se precisar de algo agora, fale com o escritório.
+            </p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   const acesso = await prisma.acessoPortal.findUnique({
     where: { tokenHash: hashTokenPortal(token) },
     include: {

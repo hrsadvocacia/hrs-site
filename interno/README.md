@@ -77,7 +77,8 @@ cliente não decifra. Cada leitura é registrada individualmente em
   contenha o que aparente ser CPF, CNPJ, e-mail ou telefone.
 - **Sem requisição a terceiros.** Nenhuma fonte externa, CDN ou telemetria: cada
   chamada a partir de uma tela com dado de cliente entregaria padrão de uso a
-  quem não é operador contratado.
+  quem não é operador contratado. A CSP (`connect-src 'self'`) transforma isso
+  em regra aplicada pelo navegador, e não apenas em disciplina de código.
 
 - **Limite de tentativas por origem**, com estado no Postgres — em memória não
   serviria, porque cada requisição pode cair numa instância diferente. O IP é
@@ -91,9 +92,13 @@ cliente não decifra. Cada leitura é registrada individualmente em
 
 ### Lacunas conhecidas
 
-- **Plano Vercel Hobby** não oferece Trusted IPs nem regras de firewall, e seus
-  termos vedam uso comercial. Ver `docs/DECISOES.md`, D-0.4. **Para uso real do
-  escritório é preciso plano pago.**
+- **Plano Vercel Hobby**, por decisão do escritório. Não oferece Trusted IPs nem
+  regras de firewall: o sistema fica acessível de qualquer lugar da internet,
+  protegido por senha, 2FA e limite por origem. Os termos do Hobby também
+  limitam-no a uso não comercial, e back-office de escritório cai fora dessa
+  definição — o risco é suspensão do projeto. Compensações no código: CSP que
+  bloqueia requisição a terceiros, recusa de indexação, HSTS e limite de
+  tentativas. Ver `docs/IMPLANTACAO.md`.
 - **Sem antivírus contratado.** Arquivos são validados por tipo real e tamanho,
   mas não por verificação de malware; todos aparecem como "sem antivírus". Nunca
   são servidos inline.

@@ -448,3 +448,187 @@ justamente o que não pode ser cansativo de ler.
 - `mapear` do DJEN, quando houver payload real;
 - adaptador do DEJT como fonte de conferência;
 - ligar o cron de captura em horário fixo (depende do plano Vercel, D-0.4).
+
+---
+
+## Fase 3 — Honorários, relacionamento e contato
+
+### D-3.1 — Dinheiro em centavos inteiros, nunca em ponto flutuante
+
+`0,1 + 0,2` em ponto flutuante dá `0,30000000000000004`. Relatório financeiro
+com centavo quebrado é relatório em que ninguém confia — e honorário é
+conferido contra extrato bancário. O banco guarda `DECIMAL(14,2)`; a aplicação
+converte para inteiro na entrada (`paraCentavos`) e volta a decimal na saída.
+O parcelamento joga o resto da divisão na ÚLTIMA parcela, de modo que a soma
+das parcelas é exatamente o total (teste verifica ao centavo).
+
+### D-3.2 — O relatório NÃO oferece um "total geral"
+
+Sucumbência (EAOAB art. 23) pertence ao advogado; contratual pertence ao
+contrato; destacado (art. 22, § 4º) é retido na execução. `consolidar` devolve
+as três naturezas em separado e **não expõe nenhuma chave de total** — há teste
+que verifica exatamente isso. Somar as três num número só esconde de quem é o
+dinheiro, e quem quiser somar precisa fazê-lo explicitamente, sabendo o que
+está somando.
+
+Provisão de êxito fica em coluna própria e nunca entra em "realizado", mesmo
+que alguém marque `recebido` por engano — a aplicação ignora e o banco recusa
+(CHECK `provisao_nao_e_receita`).
+
+### D-3.3 — A régua de cobrança lista; quem cobra é gente
+
+`reguaCobranca` classifica parcelas em aberto por marco (D-5, vence hoje, D+3,
+D+10, D+30) e ordena da mais atrasada à mais distante. Ela **não dispara nada**.
+Cobrança é comunicação com cliente: passa por template validado, um cliente por
+vez, com autor identificado.
+
+### D-3.4 — Validação anti-promessa: conservadora, explicada e testada
+
+`lib/mensagens/compliance.ts` recusa promessa de resultado, valor certo, prazo
+garantido e linguagem de captação (Prov. 205/2021 CFOAB; CED arts. 39 a 47). A
+comparação ignora acento e caixa. O resultado aponta **o trecho** e **o motivo**,
+para que a correção seja informada e não adivinhada.
+
+Duas decisões finas:
+
+- **Negação é a frase certa.** "Não há previsão de julgamento" é exatamente o
+  que se deve dizer ao cliente; a regra de "previsão/estimativa" admite negação
+  imediatamente anterior. A exceção é estreita: não vale para promessa de
+  resultado ("não se preocupe, você vai ganhar" continua barrado).
+- **O prazo raramente fica colado ao verbo.** "Você vai receber cerca de
+  R$ 50.000,00 em até 6 meses" separa os dois por uma quantia — que contém
+  pontos. A regra permite ponto dentro de número no intervalo, senão a frase
+  seria barrada como promessa e como valor, mas **não** como prazo, e o
+  advogado corrigiria só as duas primeiras.
+
+Template com violação **não é salvo**, nem como rascunho: não existe estado
+"salvo mas inválido" para alguém usar por engano. O texto FINAL, já com as
+variáveis preenchidas, é validado de novo antes do envio — uma variável livre
+como `{{orientacoes}}` poderia carregar a promessa que o corpo não tinha.
+
+No banco, a trigger `envio_exige_template_validado` recusa `INSERT` em
+`envio_mensagem` com template sem `validadoEm` ou inativo.
+
+### D-3.5 — Envio assistido enquanto o contrato da API não for verificado
+
+A API oficial do WhatsApp Business e o provedor de e-mail ainda não foram
+chamados de verdade. Pela mesma regra do DJEN (D-2.1), não se escreve cliente
+contra contrato não observado. Até lá o sistema **prepara** a mensagem (valida,
+renderiza, registra com autor e data) e o advogado envia pelo canal oficial e
+confirma. O registro em `envio_mensagem` fica idêntico ao que ficaria com a
+API; o que muda é quem aperta o botão.
+
+`canalAutomaticoDisponivel()` devolve `false` e a tela diz isso em letras
+grandes. Número pessoal não é automatizado, e não há disparo em massa.
+
+### D-3.6 — Documento cifrado no próprio Postgres, não em bucket de terceiro
+
+Peça de processo é sigilo profissional (EAOAB art. 34, VII). Bucket de terceiro
+exigiria contrato de operador (LGPD art. 39) que o escritório ainda não tem.
+O conteúdo é cifrado com AES-256-GCM (contexto = id do documento) e guardado em
+tabela apartada, para que listar documentos não carregue os bytes. A interface
+`Armazenamento` existe para que a troca por S3/R2 seja substituição de
+implementação, não reescrita de telas.
+
+O tipo é decidido pelos **bytes**, não pela extensão nem pelo `Content-Type`
+declarado pelo navegador — os dois são escolhidos por quem envia. Executável
+renomeado para `.pdf` é recusado (verificado no navegador).
+
+**Não há antivírus contratado.** O status fica `PENDENTE` e a tela mostra "sem
+antivírus": marcar "limpo" sem verificar seria mentir para quem abre o arquivo.
+
+### D-3.7 — Download por URL assinada, com RBAC refeito no clique
+
+O link carrega um token HMAC que amarra documento + usuário + validade de 5
+minutos. No clique, a permissão é **reconferida**: um link emitido há cinco
+minutos não sabe que o perfil mudou desde então. O arquivo sai como
+`attachment` — PDF aberto no navegador poderia executar script no mesmo domínio
+da sessão.
+
+### D-3.8 — Lead sem consentimento datado entra, mas não pode ser contatado
+
+A planilha do simulador traz linhas que pediram contato sem data de
+consentimento. Elas não são descartadas (a pessoa existe e o escritório precisa
+saber disso) nem promovidas: entram como `SEM_CONSENTIMENTO`, com o erro
+apontado. `atualizarLead` recusa qualquer transição que não seja o descarte, e
+o banco recusa `solicitouContato = true` sem `consentimentoEm` (CHECK
+`lead_consentimento_datado`).
+
+Importar **não envia nada a ninguém**. Os leads não convertidos ganham prazo de
+descarte de 180 dias.
+
+### D-3.9 — Acesso negado não é erro 500
+
+Tela de erro genérica faz o usuário concluir que o sistema quebrou — e ensina a
+equipe a ignorar tela de erro. `exigirPermissao` registra a tentativa na
+auditoria (informação de segurança legítima) e leva a `/sem-permissao`, que diz
+o que foi tentado, por que o perfil não alcança e o que o perfil alcança.
+Verificado nos três perfis: 47 checagens de fronteira, todas passando.
+
+### D-3.10 — Limitação de tentativas com estado no banco, falhando aberto
+
+Em memória não serve: na Vercel cada requisição pode cair num processo
+diferente, e o limitador protegeria apenas a instância que por acaso atendeu.
+O estado mora no Postgres — que já existe; um Redis seria mais uma dependência
+e mais um contrato para manter. O IP entra **hasheado** (HMAC com o
+`AUTH_SECRET`): a tabela precisa distinguir origens, não identificá-las.
+
+O limitador **falha aberto**: banco indisponível não derruba o login do
+escritório. Um limitador que fecha a porta quando o Postgres oscila causa mais
+dano do que o ataque que previne, e as outras defesas continuam de pé (scrypt,
+TOTP obrigatório, bloqueio por conta após 5 falhas).
+
+Verificado: após 10 tentativas de uma origem, a 11ª é recusada — e a senha
+**correta** também, até a janela fechar.
+
+### D-3.11 — Revisão anual do calendário é cobrada antes de virar o ano
+
+Feriado municipal muda de data e portaria de suspensão sai todo ano. Calendário
+do ano anterior não é aproximação aceitável: erra em dias específicos, e cada
+dia errado é um prazo contado a mais ou a menos. A cobrança começa em 1º de
+novembro para o ano seguinte; dentro do ano corrente sem calendário vigente, a
+pendência aparece como **bloqueante** — que é a verdade, porque o motor recusa
+calcular (D-1.5). O carimbo semanal evita que o alerta vire ruído diário.
+
+---
+
+## Fase 4 — Portal do cliente
+
+### D-4.1 — O cliente não tem conta; tem link individual com validade
+
+Cadastro de cliente significaria senha de cliente, recuperação de senha de
+cliente e mais uma superfície de ataque sobre dado sob sigilo. O escritório
+emite um link com token de 32 bytes, entregue pelo canal oficial, com validade
+padrão de 30 dias e revogação a qualquer momento.
+
+No banco fica apenas o **hash** do token: um dump do banco não dá acesso ao
+portal de ninguém. A conferência é em tempo constante. Token inexistente e
+token revogado respondem igual, para que o portal não sirva de oráculo de
+"este link já existiu".
+
+Validade curta é deliberada: link de portal costuma ser encaminhado em conversa
+de família, e link eterno vira acesso permanente de terceiro ao processo.
+
+### D-4.2 — O portal não tem campo de previsão, e isso é estrutural
+
+Não existe "previsão de término" nem "estimativa de valor" no portal porque
+**não existe o campo**. O que o cliente lê é: fato registrado pelo escritório
+(movimentação, audiência designada) ou frase fixa de
+`lib/portal/linguagem.ts`. Um teste automatizado passa **cada frase fixa** pela
+mesma validação anti-promessa dos templates.
+
+Ficam de fora, por decisão: prazo interno (data fatal é controle do escritório
+e assustaria sem contexto), anotação privilegiada, documento privilegiado e
+qualquer valor de honorário.
+
+### D-4.3 — DEJT e DataJud continuam bloqueados, pelo mesmo motivo do DJEN
+
+O adaptador do DEJT (fonte secundária de conferência) e o enriquecimento por
+DataJud não foram escritos. A rede deste ambiente não alcança nenhum dos dois,
+e a regra vale igual: **não se escreve cliente contra contrato não observado**.
+Quando houver resposta real, os dois entram atrás das interfaces que já
+existem (`FontePublicacao`), sem mexer nas telas.
+
+O DataJud, quando entrar, **nunca** será fonte de prazo: é enriquecimento de
+andamento. Prazo nasce de publicação em diário ou de lançamento manual de
+advogado.

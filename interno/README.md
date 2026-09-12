@@ -79,15 +79,34 @@ cliente não decifra. Cada leitura é registrada individualmente em
   chamada a partir de uma tela com dado de cliente entregaria padrão de uso a
   quem não é operador contratado.
 
-### Lacunas conhecidas nesta fase
+- **Limite de tentativas por origem**, com estado no Postgres — em memória não
+  serviria, porque cada requisição pode cair numa instância diferente. O IP é
+  guardado como HMAC: a tabela distingue origens sem identificá-las. Falha
+  **aberto** de propósito: banco indisponível não pode derrubar o login do
+  escritório, e as outras defesas continuam de pé.
+- **Arquivo cifrado em repouso**, com tipo conferido pelos bytes (não pela
+  extensão) e download por URL assinada de 5 minutos, com RBAC refeito no clique.
+- **Acesso negado é tela explicada**, não erro 500 — e a tentativa fica na
+  auditoria.
 
-- **Rate limiting por IP não implementado.** Há bloqueio de conta após 5
-  tentativas malsucedidas, o que contém força bruta contra uma conta conhecida,
-  mas não há limite por origem. Consequência: é possível inflar a tabela de
-  auditoria com tentativas anônimas. Exige um armazenamento compartilhado
-  (decisão pendente) e entra na Fase 1.
+### Lacunas conhecidas
+
 - **Plano Vercel Hobby** não oferece Trusted IPs nem regras de firewall, e seus
-  termos vedam uso comercial. Ver `docs/DECISOES.md`, D-0.4.
+  termos vedam uso comercial. Ver `docs/DECISOES.md`, D-0.4. **Para uso real do
+  escritório é preciso plano pago.**
+- **Sem antivírus contratado.** Arquivos são validados por tipo real e tamanho,
+  mas não por verificação de malware; todos aparecem como "sem antivírus". Nunca
+  são servidos inline.
+- **DJEN, DEJT e DataJud não implementados.** Nenhum dos três teve o contrato da
+  API observado com resposta real, e este sistema não escreve cliente contra
+  contrato não verificado (D-2.1 e D-4.3). Enquanto isso, **não há captura
+  automática**: todo prazo é lançado à mão, e o painel diz isso em tela.
+- **Envio de mensagem é assistido.** A API do WhatsApp Business e o provedor de
+  e-mail também não foram verificados: o sistema prepara, valida e registra a
+  mensagem; o envio é feito pelo canal oficial e confirmado (D-3.5).
+- **Backup próprio depende de rotina humana.** O provedor faz PITR; a cópia
+  semanal fora do provedor e o teste trimestral de restauração estão em
+  `docs/BACKUP.md` e **ainda não foram executados nenhuma vez**.
 
 ## Estado por fase
 
@@ -96,12 +115,26 @@ cliente não decifra. Cada leitura é registrada individualmente em
 | 0 — Fundação | **Entregue**: schema, migrations, auth com 2FA, RBAC, auditoria, CRUD de clientes e processos, seed |
 | 1 — Prazos manuais | **Entregue**: motor de contagem, calendário por tribunal, cadastro e conferência de prazo, alertas escalonados, painel |
 | 2 — Captura DJEN | **Parcial**: interface de fontes, deduplicação, triagem, vigilância da captura, checklist do Domicílio e lançamento manual entregues. O adaptador do DJEN aguarda verificação do contrato da API (ver `docs/DECISOES.md`, D-2.1) |
-| 3 — Honorários e contato | Não iniciada |
-| 4 — Portal do cliente | Não iniciada |
+| 3 — Honorários e contato | **Entregue**: contratos e parcelas, lançamentos por natureza, relatórios e CSV, recibo em timbrado, templates com validação anti-promessa, envio assistido, atendimentos, leads com consentimento, agenda com alerta de deslocamento, documentos cifrados, dados de saúde, painel do sócio, contas, auditoria consultável e LGPD |
+| 4 — Portal do cliente | **Entregue** na parte que não depende de API externa: portal somente leitura por link individual com validade e revogação. DataJud não implementado (D-4.3) |
 
-Até a Fase 2 **não há captura automática de publicações**: todo prazo é lançado
-à mão. O painel diz isso em tela, para que a ausência de alerta nunca seja lida
-como ausência de prazo.
+**Não há captura automática de publicações**: todo prazo é lançado à mão. O
+painel diz isso em tela, para que a ausência de alerta nunca seja lida como
+ausência de prazo.
+
+### Módulos
+
+| Módulo | Onde | Quem acessa |
+|---|---|---|
+| Prazos, calendários, publicações, Domicílio | `/prazos`, `/calendarios`, `/publicacoes`, `/domicilio` | Sócio, advogado, estagiário (sem confirmar prazo) |
+| Clientes, processos, documentos, dados de saúde | `/clientes`, `/processos`, `/documentos` | Sócio, advogado, estagiário (sem dado sensível) |
+| Honorários, parcelas, relatórios | `/honorarios` | Sócio, financeiro; advogado vê os próprios contratos |
+| Atendimentos, mensagens, leads | `/atendimentos`, `/mensagens`, `/leads` | Sócio, advogado, estagiário (atendimento) |
+| Agenda e exportação iCal | `/agenda` | Sócio, advogado, estagiário |
+| Painel do sócio | `/painel` | Sócio |
+| Contas e auditoria | `/usuarios`, `/auditoria` | Administração; auditoria também para sócio |
+| LGPD e retenção | `/lgpd` | Sócio |
+| Portal do cliente | `/portal/<token>` | O cliente, por link individual |
 
 ### Antes de usar o módulo de prazos em produção
 
@@ -114,5 +147,25 @@ número com aparência de fundamento.
 
 ### Variáveis adicionais
 
-`CRON_SECRET` — segredo que autentica o job diário de alertas
-(`/api/cron/alertas`, agendado em `vercel.json` para 11h UTC / 8h em Brasília).
+| Variável | Para quê |
+|---|---|
+| `CRON_SECRET` | Autentica os jobs agendados (`/api/cron/*`). Sem ela o job responde 500 em vez de rodar aberto |
+| `NEXT_PUBLIC_URL_BASE` | Base absoluta usada para montar o link do portal entregue ao cliente |
+
+Os jobs em `vercel.json`: alertas de prazo, revisão anual de calendário e
+expurgo das janelas de limitação às 11h UTC (8h em Brasília); captura de
+publicações às 12h UTC nos dias úteis.
+
+## Verificação
+
+Nada aqui foi dado como pronto por inspeção de código. O que foi exercitado de
+verdade, contra Postgres real e pelo navegador:
+
+| O quê | Como |
+|---|---|
+| 401 testes de unidade | `npm test` — motor de prazos (incl. 3.000 casos diferenciais contra implementação independente), TOTP contra os vetores da RFC 6238, CPF/CNPJ/CNJ, validação anti-promessa, honorários, leads, agenda, arquivos, LGPD |
+| 38 invariantes de banco | `npm run test:invariantes` — cada uma é **ativamente violada** e o banco precisa recusar |
+| 27 fluxos de ponta a ponta | Navegador real: contrato → parcela → recibo, template vedado recusado, importação de leads, upload e download assinado, portal |
+| 47 fronteiras de perfil | Navegador real: o que cada perfil abre, o que o menu esconde e o que é recusado |
+
+O teste de restauração de backup **ainda não foi feito** — ver `docs/BACKUP.md`.

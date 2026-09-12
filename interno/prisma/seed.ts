@@ -1,5 +1,11 @@
 /**
- * Seed da Fase 0.
+ * Seed da estrutura inicial.
+ *
+ * ATENCAO ao e-mail das contas: ele e a IDENTIDADE DE LOGIN. Os enderecos
+ * abaixo seguem o dominio do escritorio (hrsadvocacia.adv.br), mas se as caixas
+ * reais forem outras — inclusive de outro provedor —, troque-os ANTES da
+ * primeira execucao. Depois do seed, a correcao passa a exigir alteracao de
+ * cadastro pela tela de Contas.
  *
  * O que ENTRA: estrutura verificavel — tribunais, orgaos julgadores, feriados
  * nacionais de lei federal, e as contas da equipe com as inscricoes na OAB
@@ -58,28 +64,28 @@ const ORGAOS: ReadonlyArray<{ tribunal: string; nome: string; municipio: string;
 const EQUIPE = [
   {
     nome: "Aluísio Henrique de Holanda Filho",
-    email: "aluisio@hrsadvocacia.com.br",
+    email: "aluisio@hrsadvocacia.adv.br",
     perfil: "SOCIO",
     unidade: "TERESINA",
     oab: [{ numero: "8815", uf: "PI", principal: true }],
   },
   {
     nome: "Paulo Renand da Silva Ramalho",
-    email: "paulo@hrsadvocacia.com.br",
+    email: "paulo@hrsadvocacia.adv.br",
     perfil: "SOCIO",
     unidade: "TERESINA",
     oab: [{ numero: "22759", uf: "PI", principal: true }],
   },
   {
     nome: "Adrielly Sousa Oliveira",
-    email: "adrielly@hrsadvocacia.com.br",
+    email: "adrielly@hrsadvocacia.adv.br",
     perfil: "SOCIO",
     unidade: "GOIANIA",
     oab: [{ numero: "76478", uf: "GO", principal: true }],
   },
   {
     nome: "Administração do sistema",
-    email: "admin@hrsadvocacia.com.br",
+    email: "admin@hrsadvocacia.adv.br",
     perfil: "ADMIN",
     unidade: "GOIANIA",
     oab: [],
@@ -275,7 +281,7 @@ async function main() {
   // o seed nao tem passe livre: se a validacao recusar, o template entra sem
   // carimbo e o banco recusa usa-lo em envio.
   const socia = await prisma.usuario.findUniqueOrThrow({
-    where: { email: "adrielly@hrsadvocacia.com.br" },
+    where: { email: "adrielly@hrsadvocacia.adv.br" },
     select: { id: true },
   });
   let templatesValidados = 0;
@@ -304,7 +310,7 @@ async function main() {
 
   // ---------------------------------------------- calendarios e revisao anual
   const admin = await prisma.usuario.findUniqueOrThrow({
-    where: { email: "admin@hrsadvocacia.com.br" },
+    where: { email: "admin@hrsadvocacia.adv.br" },
     select: { id: true },
   });
 

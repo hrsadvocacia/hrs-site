@@ -43,7 +43,7 @@ export async function GET(requisicao: Request) {
   const falhas = resultados.filter((r) => r.status === "FALHA").length;
   await registrar({
     usuarioId: null,
-    usuarioEmail: "sistema@hrsadvocacia.com.br",
+    usuarioEmail: "sistema@hrsadvocacia.adv.br",
     acao: "ALTERACAO",
     entidade: "captura_diaria",
     descricao:

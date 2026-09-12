@@ -11,8 +11,11 @@ de saúde em matéria previdenciária.
 
 ## Arquitetura
 
-Projeto Vercel **separado** do site institucional, com *Root Directory* em
-`interno/`. Variáveis de ambiente, Trusted IPs/WAF, cadência de deploy e logs
+Projeto Vercel **separado** do site institucional, em
+`interno.hrsadvocacia.adv.br`, com *Root Directory* em `interno/`. O apex
+`hrsadvocacia.adv.br` continua servindo o site público — dois projetos Vercel
+não compartilham hostname, e o subdomínio ainda mantém os cookies de sessão
+fora do alcance do site institucional. Variáveis de ambiente, Trusted IPs/WAF, cadência de deploy e logs
 são escopados por projeto na Vercel — um route group ou middleware de host no
 projeto do site público não separaria nenhum dos quatro. Ver `docs/DECISOES.md`.
 
@@ -155,7 +158,7 @@ número com aparência de fundamento.
 | Variável | Para quê |
 |---|---|
 | `CRON_SECRET` | Autentica os jobs agendados (`/api/cron/*`). Sem ela o job responde 500 em vez de rodar aberto |
-| `NEXT_PUBLIC_URL_BASE` | Base absoluta usada para montar o link do portal entregue ao cliente |
+| `NEXT_PUBLIC_URL_BASE` | Base absoluta do sistema — `https://interno.hrsadvocacia.adv.br`. Usada para montar o link do portal entregue ao cliente |
 
 Os jobs em `vercel.json`: alertas de prazo, revisão anual de calendário e
 expurgo das janelas de limitação às 11h UTC (8h em Brasília); captura de

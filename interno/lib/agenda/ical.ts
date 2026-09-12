@@ -57,7 +57,7 @@ export function gerarIcal(eventos: readonly EventoIcal[], geradoEm: Date = new D
     const fim = new Date(e.inicio.getTime() + e.duracaoMinutos * 60_000);
     linhas.push(
       "BEGIN:VEVENT",
-      `UID:${e.uid}@interno.hrsadvocacia.com.br`,
+      `UID:${e.uid}@interno.hrsadvocacia.adv.br`,
       `DTSTAMP:${utc(geradoEm)}`,
       `DTSTART:${utc(e.inicio)}`,
       `DTEND:${utc(fim)}`,

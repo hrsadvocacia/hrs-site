@@ -136,7 +136,7 @@ export async function GET(requisicao: Request) {
 
   await registrar({
     usuarioId: null,
-    usuarioEmail: "sistema@hrsadvocacia.com.br",
+    usuarioEmail: "sistema@hrsadvocacia.adv.br",
     acao: "ALTERACAO",
     entidade: "alerta_prazo",
     descricao:

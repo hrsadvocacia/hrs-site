@@ -54,6 +54,31 @@ usado para valer se forem pulados.
    diretos são a restrição do acesso às redes do escritório e a regularidade
    contratual.
 
+### 2.1 Domínio
+
+O sistema interno fica em **`interno.hrsadvocacia.adv.br`**.
+
+Não pode ser o apex `hrsadvocacia.adv.br`: esse hostname já serve o site
+institucional (está nos `canonical` e no `sitemap.xml` do próprio repositório),
+e dois projetos Vercel não compartilham o mesmo hostname. O subdomínio também
+mantém separados os cookies de sessão — cookie emitido no apex seria enviado
+pelo navegador também ao site público, o que é exatamente o que a separação de
+projetos existe para evitar.
+
+No painel da Vercel, em *Settings → Domains* do projeto **do sistema interno**
+(não o do site), adicionar `interno.hrsadvocacia.adv.br`. No provedor de DNS do
+domínio, criar o registro que a Vercel indicar:
+
+```
+interno   CNAME   cname.vercel-dns.com.
+```
+
+O certificado TLS é emitido pela Vercel automaticamente. Confira que o site
+institucional continua respondendo no apex e em `www` antes de seguir.
+
+> Se preferir outro rótulo (`sistema.`, `adm.`), basta trocar em dois lugares:
+> o domínio na Vercel e a variável `NEXT_PUBLIC_URL_BASE`.
+
 ## 3. Variáveis de ambiente
 
 No projeto da Vercel, em *Settings → Environment Variables* (Production):
@@ -65,7 +90,7 @@ No projeto da Vercel, em *Settings → Environment Variables* (Production):
 | `CHAVE_CRIPTOGRAFIA_V1` | `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` |
 | `CHAVE_CRIPTOGRAFIA_VERSAO_ATUAL` | `1` |
 | `CRON_SECRET` | `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` |
-| `NEXT_PUBLIC_URL_BASE` | A URL final do sistema, ex.: `https://interno.hrsadvocacia.com.br` |
+| `NEXT_PUBLIC_URL_BASE` | `https://interno.hrsadvocacia.adv.br` |
 | `NEXT_TELEMETRY_DISABLED` | `1` |
 
 > **Guarde `CHAVE_CRIPTOGRAFIA_V1` no cofre do escritório, separada do backup do
@@ -132,6 +157,9 @@ ainda vazio é o momento mais barato de descobrir que falta algo.
 
 ## 8. Conferência final antes de usar para valer
 
+- [ ] `interno.hrsadvocacia.adv.br` responde, com certificado válido, e o site
+      institucional continua intacto no apex
+- [ ] Um link de portal foi emitido e aberto de fora da rede do escritório
 - [ ] Cada pessoa entrou, trocou a senha e cadastrou o 2FA no aplicativo
 - [ ] Os nove calendários estão VIGENTES para o ano corrente
 - [ ] Um prazo de teste foi lançado e a data fatal confere com a conta feita à mão

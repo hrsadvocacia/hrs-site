@@ -212,7 +212,7 @@ export async function capturar(
 
   await registrar({
     usuarioId: null,
-    usuarioEmail: "sistema@hrsadvocacia.com.br",
+    usuarioEmail: "sistema@hrsadvocacia.adv.br",
     acao: "CRIACAO",
     entidade: "publicacao",
     descricao:

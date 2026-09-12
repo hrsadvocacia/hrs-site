@@ -85,8 +85,13 @@ const REGRAS: ReadonlyArray<{ tipo: TipoVedacao; padrao: RegExp; admiteNegacao?:
   { tipo: "PRAZO_GARANTIDO", padrao: /\bprazo\s+(?:garantido|certo|maximo garantido|assegurado)\b/ },
   { tipo: "PRAZO_GARANTIDO", padrao: /\bgarant\w*\s+(?:o\s+|a\s+)?(?:prazo|entrega|conclusao|data|rapidez|agilidade)\b/ },
   { tipo: "PRAZO_GARANTIDO", padrao: new RegExp(String.raw`\b(?:sera|serao|vai ser|vao ser|deve ser|devera ser|estara|estarao|ficara|ficarao)\s+${CONCLUSAO}\s+(?:em|ate|dentro de|no maximo em|no prazo de|antes de)\s+${NUM}\s*${UNIDADE_TEMPO}`) },
-  { tipo: "PRAZO_GARANTIDO", padrao: new RegExp(String.raw`\b(?:processo|causa|acao|caso|beneficio|aposentadoria|pagamento|alvara|rpv|precatorio|indenizacao|sentenca|decisao|julgamento|recurso)\b[^.!?\n]{0,50}\b(?:em|ate|dentro de|no maximo em|no prazo de|antes de|em menos de)\s+${NUM}\s*${UNIDADE_TEMPO}\b`) },
+  { tipo: "PRAZO_GARANTIDO", padrao: new RegExp(String.raw`\b(?:processo|causa|acao|caso|beneficio|aposentadoria|pagamento|alvara|rpv|precatorio|indenizacao|sentenca|decisao|julgamento|recurso)\b(?:[^.!?\n]|\.(?=\d)){0,50}\b(?:em|ate|dentro de|no maximo em|no prazo de|antes de|em menos de)\s+${NUM}\s*${UNIDADE_TEMPO}\b`) },
   { tipo: "PRAZO_GARANTIDO", padrao: new RegExp(String.raw`\b(?:sai|saira|resolve|resolvemos|resolveremos|conclui|concluimos|concluiremos|termina|terminamos|liberamos|liberaremos|recebe|recebera)\s+(?:tudo\s+)?(?:em|ate|dentro de|no maximo em|em menos de)\s+${NUM}\s*${UNIDADE_TEMPO}\b`) },
+  // O verbo e o prazo raramente ficam colados: "voce vai receber cerca de
+  // R$ 50.000,00 em ate 6 meses" separa os dois por uma quantia inteira. Sem
+  // esta regra a frase seria barrada como promessa e como valor, mas NAO como
+  // prazo — e o advogado corrigiria so as duas primeiras.
+  { tipo: "PRAZO_GARANTIDO", padrao: new RegExp(String.raw`\b(?:receb\w+|sai|saira|conclui\w*|resolv\w+|termin\w+|liber\w+|julg\w+|paga\w*|sera pago)\b(?:[^.!?\n]|\.(?=\d)){0,60}?\b(?:em|ate|dentro de|em menos de|no maximo em|no prazo de)\s+(?:ate\s+)?${NUM}\s*${UNIDADE_TEMPO}\b`) },
   { tipo: "PRAZO_GARANTIDO", padrao: /\b(?:previsao|estimativa|expectativa)\s+(?:de\s+)?(?:conclusao|termino|encerramento|julgamento|sentenca|recebimento|pagamento|liberacao|prazo)\b/, admiteNegacao: true },
   { tipo: "PRAZO_GARANTIDO", padrao: /\b(?:conclusao|termino|encerramento|julgamento|recebimento|pagamento|liberacao)\s+(?:previst[oa]s?|estimad[oa]s?|garantid[oa]s?|assegurad[oa]s?)\b/, admiteNegacao: true },
 

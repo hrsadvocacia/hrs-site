@@ -87,6 +87,8 @@ describe("prazo garantido", () => {
     "Previsão de conclusão: dezembro.",
     "Pagamento previsto para o próximo mês.",
     "O alvará será pago em 2 meses.",
+    "Você vai receber cerca de R$ 50.000,00 em até 6 meses.",
+    "O valor será liberado, após o trânsito em julgado, em 90 dias.",
   ];
   for (const t of vedados) {
     it(`barra: ${t}`, () => {

@@ -13,7 +13,7 @@
 
 window.HRS_RASTREAMENTO = window.HRS_RASTREAMENTO || {
   // Google Ads → Metas → Conversões → "Contato WhatsApp" → Configuração da tag
-  googleAds: { id: '', /* ex.: 'AW-123456789' */ rotulo: '' /* ex.: 'AbCdEfGh123' */ },
+  googleAds: { id: 'AW-18500345669', rotulo: 'NS24CLDh5pQdEMW-0_VE' /* conversão "Contato WhatsApp" */ },
   // Google Analytics 4 → Administrador → Fluxos de dados
   ga4: '', // ex.: 'G-XXXXXXX'
   // Meta (Instagram/Facebook) → Gerenciador de Eventos → Pixel

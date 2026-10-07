@@ -5,7 +5,7 @@ Página de campanha para conteúdo trabalhista patrocinado (Instagram, TikTok, G
 ## Antes de patrocinar
 
 1. **Revisão jurídica** (Dr. Paulo Renand): seção "Prazos que você precisa conhecer" e respostas de "Dúvidas comuns".
-2. **Número de WhatsApp**: a página usa `5586999854705` (o mesmo do restante do site). Para trocar, altere `WHATSAPP` no script no fim de `index.html`.
+2. **Número de WhatsApp**: a página usa `5586988064858` (o mesmo do perfil do Google de Timon). Para trocar, altere `WHATSAPP` no script no fim de `index.html`.
 3. **Pixels (opcional, recomendado)**: preencha os IDs no topo de `/rastreamento.js`. Campo vazio = nada é carregado.
    - Google Ads: `googleAds.id` (AW-…) e `googleAds.rotulo` da conversão "Contato WhatsApp".
    - Meta: `metaPixel`. TikTok: `tiktokPixel`. Analytics: `ga4`.

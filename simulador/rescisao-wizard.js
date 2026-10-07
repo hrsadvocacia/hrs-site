@@ -402,7 +402,8 @@ function ligarLead(entrada, r) {
       } catch { /* falha de rede não bloqueia o contato pelo usuário */ }
     }
 
-    const msg = `Olá, usei o simulador de verbas rescisórias no site e gostaria de conferir o meu caso. Meu nome é ${nome}.`;
+    const origem = (window.HRS && window.HRS.origem) ? window.HRS.origem() : origemUTM();
+    const msg = `Olá, usei o simulador de verbas rescisórias no site e gostaria de conferir o meu caso. Meu nome é ${nome}.\n\n[origem: ${origem} · simulador-rescisao]`;
     const link = /** @type {HTMLAnchorElement} */ ($('l-whatsapp-btn'));
     link.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
     link.hidden = false;

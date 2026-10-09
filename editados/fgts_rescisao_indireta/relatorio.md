@@ -162,7 +162,7 @@ Varri a transcrição final, todas as legendas, o gancho, a assinatura e a legen
 ## 10. Arquivos entregues
 
 - `fgts_rescisao_indireta_final.mp4`: versão única para Reels, TikTok e Kwai
-- `fgts_rescisao_indireta_capa.jpg`: 1080×1920, frame 0 (olhos abertos, olhar na câmera, gancho legível)
+- `fgts_rescisao_indireta_capa.jpg`: 1080×1920, capa gráfica sem foto (manchete + extrato ilustrativo de FGTS com meses "NÃO DEPOSITADO" + "FALTA GRAVE"). O conteúdo essencial fica dentro do recorte 3:4 do grid de perfil (y 240–1680).
 - `fgts_rescisao_indireta_legenda.txt`: texto da postagem
 - `fgts_rescisao_indireta_legendas.srt`: legendas em arquivo separado
 - `relatorio.md`: este relatório

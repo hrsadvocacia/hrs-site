@@ -17,7 +17,7 @@ import { simular, ParametroPendenteError, EntradaInvalidaError, EnteTetoIndefini
 // usuário (modelo passivo, conforme Provimento 205/2021).
 const LEAD_ENDPOINT = '';
 // Número de WhatsApp para o contato iniciado pelo usuário (unidade principal).
-const WHATSAPP = '5586999854705';
+const WHATSAPP = '5586988064858';
 
 const DISCLAIMER =
   'Esta é uma ferramenta informativa e gratuita. O resultado é uma <strong>estimativa</strong> ' +
@@ -283,19 +283,11 @@ function renderLead() {
   return `
     <div class="lead-block" id="leadBlock">
       <h2>Quer a análise do seu caso concreto?</h2>
-      <p class="lead-sub">Se preferir, deixe seu contato e fale com um advogado do escritório. O contato pelo WhatsApp é iniciado por você — não enviamos mensagens automáticas.</p>
+      <p class="lead-sub">Converse com um advogado do escritório pelo WhatsApp. A conversa é iniciada por você e nada é enviado por esta página.</p>
       <form id="leadForm" novalidate>
-        <div class="sim-field"><label for="l-nome">Nome</label><input type="text" id="l-nome" name="nome" autocomplete="name" required /></div>
-        <div class="sim-field"><label for="l-whats">WhatsApp</label><input type="tel" id="l-whats" name="whatsapp" autocomplete="tel" placeholder="(00) 00000-0000" required /></div>
-        <div class="sim-field"><label for="l-email">E-mail (opcional)</label><input type="email" id="l-email" name="email" autocomplete="email" /></div>
-        <div class="lead-hp" aria-hidden="true"><label>Não preencha<input type="text" id="l-website" name="website" tabindex="-1" autocomplete="off" /></label></div>
-        <div class="lead-consent">
-          <input type="checkbox" id="l-consent" required />
-          <label for="l-consent">Autorizo o HRS Advocacia a entrar em contato sobre o meu caso e a tratar meus dados para essa finalidade, conforme a <a href="contato.html">política de privacidade</a> (LGPD). Posso solicitar a exclusão a qualquer momento.</label>
-        </div>
-        <button type="submit" class="btn-whatsapp" id="l-submit">Continuar</button>
-        <a class="btn-whatsapp" id="l-whatsapp-btn" hidden target="_blank" rel="noopener">Abrir conversa no WhatsApp</a>
-        <p class="lead-status" id="l-status"></p>
+        <div class="sim-field"><label for="l-nome">Seu primeiro nome (opcional)</label><input type="text" id="l-nome" name="nome" autocomplete="given-name" maxlength="40" /></div>
+        <a class="btn-whatsapp" id="l-whatsapp-btn" href="https://wa.me/${WHATSAPP}" target="_blank" rel="noopener">Falar com o advogado pelo WhatsApp</a>
+        <p class="lead-status">Você confere a mensagem no WhatsApp antes de enviar. Veja a <a href="privacidade.html">Política de Privacidade</a>.</p>
       </form>
     </div>`;
 }
@@ -329,50 +321,17 @@ function renderEmConfiguracao() {
  * @param {import('./tipos.js').ResultadoSimulacao} r
  */
 function ligarLead(entrada, r) {
-  const form = /** @type {HTMLFormElement} */ ($('leadForm'));
-  if (!form) return;
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const status = $('l-status');
+  const link = /** @type {HTMLAnchorElement} */ ($('l-whatsapp-btn'));
+  if (!link) return;
+  // Sem coleta de dados: o nome (opcional) só entra no texto da mensagem que a
+  // própria pessoa confere e envia no WhatsApp (Provimento 205/2021).
+  const atualizar = () => {
     const nome = /** @type {HTMLInputElement} */ ($('l-nome')).value.trim();
-    const whats = /** @type {HTMLInputElement} */ ($('l-whats')).value.trim();
-    const email = /** @type {HTMLInputElement} */ ($('l-email')).value.trim();
-    const consent = /** @type {HTMLInputElement} */ ($('l-consent')).checked;
-    const honeypot = /** @type {HTMLInputElement} */ ($('l-website')).value;
-
-    if (honeypot) return; // bot
-    status.className = 'lead-status';
-    if (!nome || !whats) { status.textContent = 'Informe seu nome e WhatsApp.'; status.classList.add('err'); return; }
-    if (!consent) { status.textContent = 'É preciso autorizar o contato para prosseguir.'; status.classList.add('err'); return; }
-
-    // Gravação do lead (só se houver endpoint configurado).
-    if (LEAD_ENDPOINT) {
-      try {
-        await fetch(LEAD_ENDPOINT, {
-          method: 'POST',
-          mode: 'no-cors', // Web App do Apps Script: evita preflight de CORS
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // requisição "simples"
-          body: JSON.stringify({
-            timestamp: new Date().toISOString(),
-            nome, whatsapp: whats, email,
-            ente: entrada.ente, natureza: entrada.naturezaCredito,
-            valorBruto: entrada.valorBruto, classificacao: r ? r.classificacao : 'indefinido',
-            consentimentoLGPD: consent, origem: origemUTM(),
-            website: honeypot, // repassa o honeypot para a 2ª barreira no servidor
-          }),
-        });
-      } catch { /* falha de rede não bloqueia o contato pelo usuário */ }
-    }
-
-    // Contato iniciado pelo usuário — em primeira pessoa (Provimento 205/2021).
-    const msg = `Olá, usei o simulador de precatório/RPV no site e gostaria de uma análise do meu caso. Meu nome é ${nome}.`;
-    const link = /** @type {HTMLAnchorElement} */ ($('l-whatsapp-btn'));
+    const msg = `Olá, usei o simulador de precatório/RPV no site e gostaria de uma análise do meu caso.${nome ? ` Meu nome é ${nome}.` : ''}`;
     link.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
-    link.hidden = false;
-    /** @type {HTMLButtonElement} */ ($('l-submit')).hidden = true;
-    status.className = 'lead-status ok';
-    status.textContent = 'Tudo certo! Toque no botão acima para abrir a conversa quando quiser.';
-  });
+  };
+  ['pointerdown', 'focus', 'click'].forEach((ev) => link.addEventListener(ev, atualizar));
+  atualizar();
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

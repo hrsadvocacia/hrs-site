@@ -1,0 +1,7 @@
+settings.local.json
+launch.json
+package.json
+scripts/
+data/*.md
+simulador/*.test.js
+lp/LEIA-ME.md

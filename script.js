@@ -51,7 +51,7 @@ if (navbar) {
 
   // números por unidade
   const numeros = {
-    teresina: '5586999854705',
+    teresina: '5586988064858',
     timon:    '5586988064858',
     goiania:  '5562983298288'
   };

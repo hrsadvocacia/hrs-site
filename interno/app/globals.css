@@ -1,0 +1,602 @@
+/*
+ * Identidade visual do timbrado oficial do escritorio.
+ *
+ * A paleta foi AMOSTRADA da arte da marca (word/media/image1.png do
+ * Timbrado_HRS.docx), nao escolhida por aproximacao:
+ *   azul institucional  #3858AB   (texto "ADVOCACIA & CONSULTORIA JURIDICA")
+ *   azul do rodape      #709FDB   (cor do rodape no timbrado)
+ *   dourado (gradiente) #F9E08A -> #F4CE57 -> #C08A1B  (letras HRS e a regra)
+ *
+ * A arte da marca e ativo fixo: entra como imagem (public/marca/hrs-logo.png,
+ * recortada do proprio .docx), nunca recriada tipograficamente.
+ *
+ * Tipografia: Calibri, como no timbrado. Carlito e o substituto de metrica
+ * identica em maquinas sem Calibri. Nenhuma fonte e carregada de CDN — chamada
+ * a terceiro a partir de tela com dado de cliente entrega padrao de uso a quem
+ * nao e operador contratado.
+ */
+
+:root {
+  /* Marca */
+  --azul: #3858ab;
+  --azul-escuro: #2a4383;
+  --azul-claro: #709fdb;
+  --azul-vestigio: #eef2fa;
+  --ouro: #c08a1b;
+  --ouro-medio: #f4ce57;
+  --ouro-claro: #f9e08a;
+
+  /* Papel e tinta */
+  --papel: #f4f5f7;
+  --superficie: #ffffff;
+  --tinta: #1c2530;
+  --tinta-suave: #5d6b7a;
+  --borda: #dfe4ec;
+
+  /* Sinalizacao */
+  --alerta: #a4262c;
+  --alerta-fundo: #fdeceb;
+  --alerta-borda: #f0c9c7;
+  --atencao: #8a5a00;
+  --atencao-fundo: #fdf5e4;
+  --atencao-borda: #eddcb2;
+  --ok: #1d6b3f;
+  --ok-fundo: #e9f4ee;
+  --ok-borda: #c2e0cf;
+
+  --raio: 6px;
+  --regra-ouro: linear-gradient(
+    to right,
+    transparent,
+    var(--ouro-claro) 12%,
+    var(--ouro-medio) 50%,
+    var(--ouro-claro) 88%,
+    transparent
+  );
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: Calibri, Carlito, "Segoe UI", system-ui, -apple-system,
+    "Helvetica Neue", Arial, sans-serif;
+  font-size: 15.5px;
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--azul);
+  text-decoration-color: rgba(56, 88, 171, 0.35);
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  text-decoration-color: currentColor;
+}
+
+/* =========================================================================
+   TIMBRADO — logo centralizado, regra dourada, navegacao discreta
+   ========================================================================= */
+
+.timbrado {
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borda);
+}
+
+.timbrado-marca {
+  display: flex;
+  justify-content: center;
+  padding: 1.1rem 1.25rem 0.85rem;
+}
+
+.timbrado-marca img {
+  /* 158 x 88 pt no timbrado; mantida a proporcao original da arte. */
+  width: 172px;
+  height: auto;
+  display: block;
+}
+
+/* A regra dourada que existe sob o "HRS" no timbrado, atravessando a folha. */
+.regra-ouro {
+  height: 2px;
+  background: var(--regra-ouro);
+  border: 0;
+  margin: 0;
+}
+
+.barra {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0.55rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.barra nav {
+  display: flex;
+  gap: 1.35rem;
+  flex-wrap: wrap;
+}
+
+.barra nav a {
+  color: var(--tinta-suave);
+  text-decoration: none;
+  font-size: 0.92rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 0.3rem 0;
+  border-bottom: 2px solid transparent;
+}
+
+.barra nav a:hover {
+  color: var(--azul);
+  border-bottom-color: var(--ouro-medio);
+}
+
+.barra .identificacao {
+  margin-left: auto;
+  text-align: right;
+  font-size: 0.82rem;
+  color: var(--tinta-suave);
+  line-height: 1.35;
+}
+
+.barra .identificacao strong {
+  display: block;
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+/* =========================================================================
+   Conteudo
+   ========================================================================= */
+
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1.75rem 1.25rem 3rem;
+}
+
+h1 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin: 0 0 0.2rem;
+  color: var(--azul-escuro);
+}
+
+h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--tinta-suave);
+  margin: 2.25rem 0 0.75rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--borda);
+}
+
+.legenda {
+  color: var(--tinta-suave);
+  margin: 0 0 1.5rem;
+}
+
+/* =========================================================================
+   Cartoes, tabelas
+   ========================================================================= */
+
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 1rem 1.15rem;
+  margin-bottom: 1rem;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+/* Indicador numerico do painel, com o filete dourado da marca. */
+.indicador {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-top: 3px solid var(--ouro-medio);
+  border-radius: var(--raio);
+  padding: 1rem 1.15rem;
+}
+
+.indicador .rotulo {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--tinta-suave);
+  font-weight: 600;
+}
+
+.indicador .numero {
+  font-size: 2.1rem;
+  font-weight: 600;
+  color: var(--azul-escuro);
+  line-height: 1.2;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  overflow: hidden;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--borda);
+  vertical-align: top;
+}
+
+th {
+  background: var(--azul-vestigio);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--azul-escuro);
+  font-weight: 700;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover td {
+  background: #fafbfd;
+}
+
+.rolagem {
+  overflow-x: auto;
+}
+
+/* =========================================================================
+   Formularios
+   ========================================================================= */
+
+form.formulario {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 1.4rem 1.5rem;
+  max-width: 760px;
+}
+
+fieldset {
+  border: none;
+  border-top: 1px solid var(--borda);
+  padding: 1.1rem 0 0;
+  margin: 1.6rem 0 0;
+}
+
+fieldset:first-of-type {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+legend {
+  font-weight: 700;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--azul);
+  padding: 0;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.9rem;
+}
+
+label > span {
+  display: block;
+  font-size: 0.83rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--tinta);
+}
+
+label small {
+  display: block;
+  font-weight: 400;
+  color: var(--tinta-suave);
+  margin-top: 0.25rem;
+  line-height: 1.45;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--borda);
+  border-radius: 5px;
+  font: inherit;
+  background: #fff;
+  color: inherit;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--azul);
+  outline-offset: 1px;
+  border-color: var(--azul);
+}
+
+textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0 1.1rem;
+}
+
+button,
+.botao {
+  background: var(--azul);
+  color: #fff;
+  border: 1px solid var(--azul);
+  border-radius: 5px;
+  padding: 0.55rem 1.2rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+button:hover,
+.botao:hover {
+  background: var(--azul-escuro);
+  border-color: var(--azul-escuro);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.botao-secundario {
+  background: transparent;
+  color: var(--azul);
+  border-color: var(--borda);
+}
+
+.botao-secundario:hover {
+  background: var(--azul-vestigio);
+  color: var(--azul-escuro);
+  border-color: var(--azul);
+}
+
+.acoes {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 1.3rem;
+}
+
+/* =========================================================================
+   Avisos e etiquetas
+   ========================================================================= */
+
+.aviso {
+  border-radius: var(--raio);
+  padding: 0.75rem 0.95rem;
+  margin-bottom: 1rem;
+  border: 1px solid;
+  font-size: 0.92rem;
+}
+
+.aviso-erro {
+  background: var(--alerta-fundo);
+  border-color: var(--alerta-borda);
+  color: var(--alerta);
+}
+
+.aviso-atencao {
+  background: var(--atencao-fundo);
+  border-color: var(--atencao-borda);
+  color: var(--atencao);
+}
+
+.aviso-ok {
+  background: var(--ok-fundo);
+  border-color: var(--ok-borda);
+  color: var(--ok);
+}
+
+.erro-campo {
+  display: block;
+  color: var(--alerta);
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.etiqueta {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  background: var(--azul-vestigio);
+  color: var(--azul-escuro);
+}
+
+.etiqueta-pendente {
+  background: var(--atencao-fundo);
+  color: var(--atencao);
+}
+
+.etiqueta-alerta {
+  background: var(--alerta-fundo);
+  color: var(--alerta);
+}
+
+.vazio {
+  color: var(--tinta-suave);
+  font-style: italic;
+  padding: 0.9rem 0;
+}
+
+/* =========================================================================
+   Rodape — assinatura do timbrado, reproduzida na integra
+   ========================================================================= */
+
+.rodape {
+  border-top: 1px solid var(--borda);
+  background: var(--superficie);
+  padding: 0.9rem 1.25rem 1.2rem;
+  text-align: center;
+}
+
+.rodape .assinatura {
+  color: var(--azul-claro);
+  font-size: 0.86rem;
+  letter-spacing: 0.02em;
+  margin: 0.55rem 0 0;
+}
+
+.rodape .sigilo {
+  color: var(--tinta-suave);
+  font-size: 0.76rem;
+  margin: 0.35rem 0 0;
+}
+
+/* =========================================================================
+   Entrada no sistema — folha de timbrado
+   ========================================================================= */
+
+.entrada {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.folha {
+  width: 100%;
+  max-width: 420px;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: 0 1px 3px rgba(28, 37, 48, 0.06);
+  overflow: hidden;
+}
+
+.folha .marca {
+  padding: 1.9rem 2rem 1.3rem;
+  text-align: center;
+}
+
+.folha .marca img {
+  width: 190px;
+  height: auto;
+}
+
+.folha form {
+  padding: 1.6rem 2rem 2rem;
+}
+
+.folha h1 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  text-align: center;
+  color: var(--tinta-suave);
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+/* =========================================================================
+   Impressao — a pagina impressa vira o timbrado literal
+   ========================================================================= */
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .barra,
+  .acoes,
+  form.formulario .acoes {
+    display: none;
+  }
+
+  .timbrado {
+    border-bottom: none;
+  }
+
+  main {
+    padding-top: 0.5rem;
+  }
+
+  .cartao,
+  table {
+    border-color: #ccc;
+    break-inside: avoid;
+  }
+
+  .rodape {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--ouro-medio);
+  }
+}
+
+/* Documento impresso em folha timbrada (recibo, procuração, declaração). */
+.documento-impresso {
+  max-width: 800px;
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+.documento-impresso p {
+  text-align: justify;
+}
+@media print {
+  .documento-impresso .acoes {
+    display: none;
+  }
+  .documento-impresso {
+    max-width: none;
+    padding: 0 1.5cm;
+  }
+}

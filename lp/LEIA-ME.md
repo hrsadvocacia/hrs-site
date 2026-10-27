@@ -33,7 +33,7 @@ Toda mensagem que chega pela página termina com uma etiqueta, por exemplo:
 ```
 
 - 1º campo: canal/tipo/campanha.
-- 2º campo: página (`rescisao`) ou `simulador-rescisao`.
+- 2º campo: página (`rescisao`).
 - 3º campo: botão usado (`topo`, `checklist` ou `barra`).
 
 Na planilha de funil, registre cada conversa com a etiqueta, o sócio responsável e o desfecho (qualificada → proposta → contrato). Ao fim de cada semana:

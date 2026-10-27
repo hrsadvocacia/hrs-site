@@ -147,7 +147,6 @@
           <li>Carteira de trabalho digital (print das telas do contrato)</li>
           <li>Contracheques, mensagens ou fotos que mostrem horários e pagamentos</li>
         </ul>
-        <p style="margin-top:18px;font-size:15px">Quer ter uma noção dos valores antes de conversar? Use o <a id="linkSimulador" href="/simulador-rescisao.html" style="color:var(--navy);font-weight:700">Simulador de Verbas Rescisórias</a>.</p>
       </div>
     </section>
 
@@ -252,10 +251,6 @@
     quando.addEventListener('change', function () {
       aviso.classList.toggle('on', quando.value === 'Há mais de 2 anos');
     });
-
-    // Leva os parâmetros da campanha para o simulador.
-    var sim = document.getElementById('linkSimulador');
-    if (sim && window.HRS && window.HRS.comParametros) sim.href = window.HRS.comParametros(sim.getAttribute('href'));
 
     // Barra fixa só aparece quando nenhum dos botões principais está na tela.
     var barra = document.getElementById('barra');

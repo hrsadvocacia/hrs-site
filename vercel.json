@@ -1,0 +1,6 @@
+{
+  "redirects": [
+    { "source": "/simulador-rescisao.html", "destination": "/lp/trabalhista/", "permanent": true },
+    { "source": "/simulador-rescisao", "destination": "/lp/trabalhista/", "permanent": true }
+  ]
+}

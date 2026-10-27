@@ -1,7 +1,6 @@
 // @ts-check
 /**
- * Utilitários compartilhados pelos simuladores (Precatório/RPV e Verbas
- * Rescisórias): classes de erro, aritmética de dinheiro em centavos e
+ * Utilitários do Simulador de Precatório/RPV: classes de erro, aritmética de dinheiro em centavos e
  * manipulação de datas em UTC.
  *
  * Regra arquitetural: este módulo NÃO conhece DOM, rede nem parâmetros

@@ -16,7 +16,10 @@ window.HRS_RASTREAMENTO = window.HRS_RASTREAMENTO || {
   googleAds: { id: 'AW-18500345669', rotulo: 'NS24CLDh5pQdEMW-0_VE' /* conversão "Contato WhatsApp" */ },
   // Outras contas do Google Ads que também devem receber a tag em todas as páginas.
   // Usam o mesmo gtag.js (o Google pede uma única tag por página).
-  googleAdsAdicionais: ['AW-18541156398'],
+  // Cada item: { id, rotulo } — o rótulo é da conversão "Contato WhatsApp" daquela conta.
+  googleAdsAdicionais: [
+    { id: 'AW-18541156398', rotulo: '8ieRCLnknq0dEK6wjolF' } // conta HRS Advocacia 301-553-0054
+  ],
   // Google Analytics 4 → Administrador → Fluxos de dados
   ga4: '', // ex.: 'G-XXXXXXX'
   // Meta (Instagram/Facebook) → Gerenciador de Eventos → Pixel
@@ -84,14 +87,19 @@ window.HRS_RASTREAMENTO = window.HRS_RASTREAMENTO || {
     document.head.appendChild(s);
   }
 
-  var adsAdicionais = (C.googleAdsAdicionais || []).filter(Boolean);
-  var gtagId = (C.googleAds && C.googleAds.id) || adsAdicionais[0] || C.ga4;
+  // Todas as contas do Google Ads: a principal e as adicionais (aceita 'AW-…' ou { id, rotulo }).
+  var contasAds = [C.googleAds].concat(C.googleAdsAdicionais || [])
+    .map(function (c) { return typeof c === 'string' ? { id: c } : c; })
+    .filter(function (c, i, todas) {
+      return c && c.id && todas.findIndex(function (o) { return o && o.id === c.id; }) === i;
+    });
+
+  var gtagId = (contasAds[0] && contasAds[0].id) || C.ga4;
   if (gtagId) {
     window.dataLayer = window.dataLayer || [];
     window.gtag = function () { window.dataLayer.push(arguments); };
     window.gtag('js', new Date());
-    if (C.googleAds && C.googleAds.id) window.gtag('config', C.googleAds.id);
-    adsAdicionais.forEach(function (id) { if (id !== (C.googleAds && C.googleAds.id)) window.gtag('config', id); });
+    contasAds.forEach(function (c) { window.gtag('config', c.id); });
     if (C.ga4) window.gtag('config', C.ga4);
     carregar('https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(gtagId));
   }
@@ -115,8 +123,10 @@ window.HRS_RASTREAMENTO = window.HRS_RASTREAMENTO || {
     detalhes = detalhes || {};
     var area = detalhes.area || 'geral';
     try {
-      if (window.gtag && C.googleAds && C.googleAds.id && C.googleAds.rotulo) {
-        window.gtag('event', 'conversion', { send_to: C.googleAds.id + '/' + C.googleAds.rotulo });
+      if (window.gtag) {
+        contasAds.forEach(function (c) {
+          if (c.rotulo) window.gtag('event', 'conversion', { send_to: c.id + '/' + c.rotulo });
+        });
       }
       if (window.gtag && C.ga4) {
         window.gtag('event', 'generate_lead', { area: area, origem: ORIGEM, pagina: location.pathname });
